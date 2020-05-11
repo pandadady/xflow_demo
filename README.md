@@ -50,14 +50,3 @@ sh run_ps_dist_worker.sh
 ## 4. Acknowledge and Reference
 - Referring the design from [xflow](https://github.com/xswang/xflow). 
 
-
-
-## 5. AD
-
-欢迎关注公众号：**机器学习爱好者**
-
-或者扫码：
-
-![avatar](img/gongzhonghao.jpg)
-
-学习更多的机器学习源码相关内容
