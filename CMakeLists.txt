@@ -10,13 +10,17 @@ add_definitions('-std=c++11')
 include_directories(
   "${PROJECT_SOURCE_DIR}"
   "${PROJECT_SOURCE_DIR}/ps-lite/include"
+  "${PROJECT_SOURCE_DIR}/ps-lite/deps/include"
   "${PROJECT_BINARY_DIR}"
 )
 message(${PROJECT_SOURCE_DIR})
+message(${PROJECT_BINARY_DIR})
 
 link_directories(
   "${PROJECT_BINARY_DIR}"
-  "${PROJECT_BINARY_DIR}/ps-lite"
+  "${PROJECT_SOURCE_DIR}/ps-lite"
+  "${PROJECT_SOURCE_DIR}/ps-lite/deps/lib"
+  "${PROJECT_SOURCE_DIR}/ps-lite/build"
 )
 
 #add_subdirectory(ps-lite)
