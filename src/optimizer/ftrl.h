@@ -59,8 +59,7 @@ class FTRL {
             float g = req_data.vals[i * w_dim + j];
             float old_n = val.n[j];
             float n = old_n + g * g;
-            val.z[j] += g
-                        - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
+            val.z[j] += g - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
             val.n[j] = n;
             if (std::abs(val.z[j]) <= lambda1) {
               val.w[j] = 0.0;
@@ -68,8 +67,7 @@ class FTRL {
               float tmpr = 0.0;
               if (val.z[j] > 0.0) tmpr = val.z[j] - lambda1;
               if (val.z[j] < 0.0) tmpr = val.z[j] + lambda1;
-              float tmpl = -1
-                           * ((beta + std::sqrt(val.n[j]))/alpha  + lambda2);
+              float tmpl = -1 * ((beta + std::sqrt(val.n[j]))/alpha  + lambda2);
               val.w[j] = tmpr / tmpl;
             }
           } else {
@@ -126,8 +124,7 @@ class FTRL {
             float g = req_data.vals[i * v_dim + j];
             float old_n = val.n[j];
             float n = old_n + g * g;
-            val.z[j] += g -
-                        (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
+            val.z[j] += g - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
             val.n[j] = n;
 
             if (std::abs(val.z[j]) <= lambda1) {
