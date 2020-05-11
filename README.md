@@ -8,15 +8,6 @@ Distributed LR With Parameter Server
 ```
         cd ps-lite
         make -j
-
-        # Add the library file to the PATH.
-        # Assumue current dir is $ROOT_DIR.
-        export $LIBRARY_PATH=$ROOT_DIR/ps-lite/deps/lib:$LIBRARY_PATH
-        export $LD_LIBRARY_PATH=$ROOT_DIR/ps-lite/deps/lib:$LD_LIBRARY_PATH
-        export $CPATH=$ROOT_DIR/ps-lite/deps/include:$CPATH
-        export $PATH=$ROOT_DIR/ps-lite/deps/bin:$PATH
-        export $LIBRARY_PATH=$ROOT_DIR/ps-lite/build:$LIBRARY_PATH
-        export $LD_LIBRARY_PATH=$ROOT_DIR/ps-lite/build:$LD_LIBRARY_PATH
 ```
 ### 2.2 build xflow_demo
 ```
