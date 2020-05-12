@@ -64,6 +64,7 @@ uint64_t FeatureProcess::GetFidHashUint64(uint64_t slotId, int64_t value) {
 """
 import os
 import sys
+import random
 def StdHash(value):
     return hash(str(value));
 
@@ -111,7 +112,7 @@ def trans(filename, targetname):
 
 def main(workernum):
     fpath = '../ctr_data/split_data/'
-    flist = os.list(fpath)
+    flist = os.listdir(fpath)
     flist_selects = random.sample(flist, workernum)
     for i in range(1,len(flist_selects)):
         filepath = fpath + flist_selects[i]
