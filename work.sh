@@ -9,19 +9,20 @@ then
     cp -r scripts ../run
     cp mapfeat.py ../run/mapfeat.py
     cp run* ../run
-    cp kill ../run
+    cp kill.sh ../run
+else
+  if [ $1 == 'make' ]
+  then
+      mkdir -p ../run/
+      rm -rf build
+      mkdir build
+      cd build
+      cmake ..
+      make -j
+      cd ..
+      rm -rf ../run/build
+      cp -r build  ../run
+  else
+      echo "input command error "
+  fi
 fi
-
-if [ $1 == 'make' ]
-then
-    mkdir -p ../run/
-    rm -rf build
-    mkdir build
-    cd build
-    cmake ..
-    make -j
-    cd ..
-    rm -rf ../run/build
-    cp -r build  ../run
-fi
-
