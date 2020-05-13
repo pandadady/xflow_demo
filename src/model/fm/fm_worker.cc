@@ -219,7 +219,7 @@ void FMWorker::dump_w_v(){
 }
 
 void FMWorker::save_w_v(std::vector<float>& w, std::vector<float>& v, std::vector<ps::Key>& unique_keys){
-    std::cout<<"fid "<< unique_keys.size() <<" w "<< w.size() <<" v "<< v.size() << std::endl ;
+    //std::cout<<"fid "<< unique_keys.size() <<" w "<< w.size() <<" v "<< v.size() << std::endl ;
     for (size_t i = 0; i < unique_keys.size(); i++) {
         size_t fid = (unique_keys)[i];
         store_w[fid] = w[i];
@@ -229,7 +229,7 @@ void FMWorker::save_w_v(std::vector<float>& w, std::vector<float>& v, std::vecto
          }
          store_v[fid] = v_weight;
     }
-    std::cout<<"store w "<< store_w.size() <<" v "<< store_v.size() << std::endl;
+    //std::cout<<"store w "<< store_w.size() <<" v "<< store_v.size() << std::endl;
 }
 
 void FMWorker::update(int start, int end) {
