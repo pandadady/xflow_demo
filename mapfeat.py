@@ -84,6 +84,7 @@ split -l 1000000 -d  train split_data/t_
 def trans(filename, targetname):
     fo = open(targetname, 'w' )
     fmap = {}
+    num = 0
     for l in open(filename):
         l = l.strip()
         arr = l.split(',')
@@ -108,13 +109,16 @@ def trans(filename, targetname):
             slotid = str(slotid)
             items.append([slotid, fid, weight])
         fo.write(label+'\t'+" ".join([x[0]+":"+x[1]+":"+x[2] for x in items])+'\n')
+        num+=1;
+        if num==1000:break
     fo.close()
 
 def main(workernum):
     fpath = '../ctr_data/split_data/'
     flist = os.listdir(fpath)
     flist_selects = random.sample(flist, workernum)
-    for i in range(1,len(flist_selects)):
+
+    for i in range(len(flist_selects[1:])):
         filepath = fpath + flist_selects[i]
         target = 'data/train.libsvm-0000'+str(i)
         trans(filepath,target)
