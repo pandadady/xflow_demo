@@ -26,24 +26,27 @@ int main(int argc, char *argv[]) {
     if (ps::IsWorker()) {
         std::cout << "start worker" << std::endl;
         int epochs = std::atoi(argv[4]);
-        if (*(argv[3]) == '0') {
-            std::cout << "start LR " << std::endl;
-            xflow::LRWorker* lr_worker = new xflow::LRWorker(argv[1], argv[2]);
-            lr_worker->epochs = epochs;
-            lr_worker->train();
-        }
+        std::string modelname = argv[5];
+        std::cout << modelname << std::endl;
+//        if (*(argv[3]) == '0') {
+//            std::cout << "start LR " << std::endl;
+//            xflow::LRWorker* lr_worker = new xflow::LRWorker(argv[1], argv[2]);
+//            lr_worker->epochs = epochs;
+//            lr_worker->train();
+//        }
         if (*(argv[3]) == '1') {
             std::cout << "start FM " << std::endl;
             xflow::FMWorker* fm_worker = new xflow::FMWorker(argv[1], argv[2]);
             fm_worker->epochs = epochs;
+            fm_worker->modelname = modelname;
             fm_worker->train();
         }
-        if (*(argv[3]) == '2') {
-            std::cout<< "start MVM " << std::endl;
-            xflow::MVMWorker* mvm_worker = new xflow::MVMWorker(argv[1], argv[2]);
-            mvm_worker->epochs = epochs;
-            mvm_worker->train();
-        }
+//        if (*(argv[3]) == '2') {
+//            std::cout<< "start MVM " << std::endl;
+//            xflow::MVMWorker* mvm_worker = new xflow::MVMWorker(argv[1], argv[2]);
+//            mvm_worker->epochs = epochs;
+//            mvm_worker->train();
+//        }
     }
 
 

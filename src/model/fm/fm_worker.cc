@@ -206,7 +206,7 @@ void FMWorker::calculate_loss(std::vector<float>& w,
 }
 
 void FMWorker::dump_w_v(){
-    mld.open("model/model_" + std::to_string(ps::MyRank()) + ".txt");
+    mld.open("model/model." + modelname);
     if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
     for(auto& item : store_w){
         mld << item.first << "\t" <<item.second << "\t";

@@ -67,7 +67,7 @@ class FMWorker {
     void dump_w_v();
  public:
     int epochs = 60;
-
+    std::string modelname;
  private:
     int rank;
     int core_num;
@@ -82,6 +82,7 @@ class FMWorker {
 
     std::ofstream md;
     std::ofstream mld;//模型文件
+
     std::mutex mutex;
     Base* base_;
     ThreadPool* pool_;

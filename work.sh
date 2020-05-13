@@ -1,6 +1,7 @@
 if [ -z $1 ]
 then
     echo " please input command "
+    exit -1
 fi
 if [ $1 == 'deploy' ]
 then
