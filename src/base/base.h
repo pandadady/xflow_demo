@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -23,7 +24,16 @@ class Base{
  public:
     Base() {}
     ~Base() {}
-
+    bool file_exists(const std::string &fpath) {
+        std::fstream file;
+        file.open(fpath.c_str(), std::ios::in);
+        if (!file) {
+            file.close();
+            return false;
+        }
+        file.close();
+        return true;
+    }
     static double current_realtime() {
         struct timespec tp;
         clock_gettime(CLOCK_REALTIME, &tp);

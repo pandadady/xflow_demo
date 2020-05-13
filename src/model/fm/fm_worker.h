@@ -15,13 +15,15 @@
 #include <algorithm>
 #include <vector>
 #include <ctime>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <functional>
 #include <random>
 #include <string>
 #include <memory>
-
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include "src/io/load_data_from_disk.h"
 #include "src/base/thread_pool.h"
 #include "src/base/base.h"
@@ -65,6 +67,7 @@ class FMWorker {
     void train();
     void save_w_v(std::vector<float>& w, std::vector<float>& v, std::vector<ps::Key>& unique_keys);
     void dump_w_v();
+    bool load_w_v(std::vector<ps::Key>& key, std::vector<float>& v, std::vector<float>& w);
  public:
     int epochs = 60;
     std::string modelname;

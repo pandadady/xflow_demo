@@ -231,7 +231,41 @@ void FMWorker::save_w_v(std::vector<float>& w, std::vector<float>& v, std::vecto
     }
     //std::cout<<"store w "<< store_w.size() <<" v "<< store_v.size() << std::endl;
 }
+bool FMWorker::load_w_v(std::vector<ps::Key>& key, std::vector<float>& v, std::vector<float>& w){
+    std::string model_path = "./mode/model.all";
+    if(!base_->file_exists(model_path)){
+        return false;
+    }
+    std::ifstream fin(model_path);
+    std::string line;
+    while (fin >> line) {
+        std::vector<std::string> items1;
+        boost::algorithm::split(items1, line, boost::algorithm::is_any_of(" "));
+        if (items1.size() != 2) {
+            continue;
+        }
+        std::vector<std::string> items2;
+        boost::algorithm::split(items2, items1[1], boost::algorithm::is_any_of("\t"));
+        std::vector<std::string> items3;
+        boost::algorithm::split(items3, items2[2], boost::algorithm::is_any_of(","));
+        size_t fid = atoi(items2[0].c_str());
+        float w_weight = atof(items2[1].c_str());
+        std::vector<float> v_weight(10);
+        for (int j=0; items3.size(); j++){
+             v_weight[j] = atof(items3[j].c_str());
+             v.push_back(v_weight[j]);
+        }
+        key.push_back(fid);
+        w.push_back(w_weight);
 
+//        store_w[fid] = w_weight;
+//        store_v[fid] = w_weight;
+    }
+    if (key.size()!=0){
+        return true;
+    }
+    return false;
+}
 void FMWorker::update(int start, int end) {
     size_t idx = 0;
     auto all_keys = std::vector<Base::sample_key>();
@@ -280,11 +314,18 @@ void FMWorker::update(int start, int end) {
 }
 
 void FMWorker::batch_training(ThreadPool* pool) {
-    std::vector<ps::Key> key(1);
-    std::vector<float> val_w(1);
-    std::vector<float> val_v(v_dim_);
+    std::vector<ps::Key> key;
+    std::vector<float> val_w;
+    std::vector<float> val_v;
+    if (!load_w_v(key, val_v, val_w)){
+        key.push_back(1);
+        val_w.push_back(1);
+        val_v.assign(10, 1);
+    }
+
     kv_w->Wait(kv_w->Push(key, val_w));
     kv_v->Wait(kv_v->Push(key, val_v));
+
     for (int epoch = 0; epoch < epochs; ++epoch) {
 
         xflow::LoadData train_data_loader(train_data_path, block_size << 20);
