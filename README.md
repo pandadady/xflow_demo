@@ -6,25 +6,19 @@ Distributed LR With Parameter Server
 
 ## 2. Install
         
-### 2.1 build ps-lite
+### 2.1 build 
 ```
-        cd ps-lite
-        make -j4
+        sh work.sh make
 ```
-### 2.2 build xflow_demo
+### 2.2 deploy
 ```
-        # Back to current dir.
-        cd ..
-        mkdir build
-        cd build 
-        cmake ..
-        make -j4
+        sh work.sh deploy
 ``` 
 
 ## 3.Run
 ### 3.1 Local 
 ```
-sh run_ps_local.sh
+sh run_ps_local.sh test
 ```
 
 ### 3.2 Distributed
