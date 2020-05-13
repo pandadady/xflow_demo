@@ -30,7 +30,7 @@ sh run_ps_dist_scheduler.sh
 sh run_ps_dist_server.sh
 
 # on worker node
-sh run_ps_dist_worker.sh
+sh run_ps_dist_worker.sh test
 ```
 
 
