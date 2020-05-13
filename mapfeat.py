@@ -119,7 +119,7 @@ def main(workernum):
     flist_selects = random.sample(flist, workernum)
 
     for i in range(len(flist_selects[1:])):
-        filepath = fpath + flist_selects[i]
+        filepath = fpath + flist_selects[1:][i]
         target = 'data/train.libsvm-0000'+str(i)
         trans(filepath,target)
     filepath = fpath + flist_selects[0]
