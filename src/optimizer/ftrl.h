@@ -50,7 +50,7 @@ class FTRL {
                 res.keys = req_data.keys;
                 res.vals.resize(keys_size * w_dim);
             }
-//            std::cout << "KVServerFTRLHandle_w " << keys_size  <<" "<< vals_size <<std::endl;
+            //std::cout << "KVServerFTRLHandle_w " << server->store_w.size()  <<std::endl;
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
                 FTRLEntry_w& val = store[key];
@@ -77,8 +77,7 @@ class FTRL {
             }
             server->Response(req_meta, res);
         }
-
-     private:
+    private:
         std::unordered_map<ps::Key, ftrlentry_w> store;
     };
 
@@ -99,7 +98,7 @@ class FTRL {
                 ps::KVServer<float>* server) {
             size_t keys_size = req_data.keys.size();
             ps::KVPairs<float> res;
-//            std::cout << "KVServerFTRLHandle_v " << keys_size  <<std::endl;
+            //std::cout << "KVServerFTRLHandle_v " << server->store_v.size()  <<std::endl;
             if (req_meta.push) {
                 size_t vals_size = req_data.vals.size();
                 CHECK_EQ(keys_size, vals_size / v_dim);
@@ -142,9 +141,9 @@ class FTRL {
                 }
             }
             server->Response(req_meta, res);
-        }
 
-     private:
+        }
+    private:
         std::unordered_map<ps::Key, ftrlentry_v> store;
     };
 

@@ -22,6 +22,7 @@
 #include "src/model/fm/fm_worker.h"
 
 namespace xflow {
+
 void FMWorker::calculate_pctr(int start, int end) {
     auto all_keys = std::vector<Base::sample_key>();
     auto unique_keys = std::vector<ps::Key>();
@@ -46,6 +47,7 @@ void FMWorker::calculate_pctr(int start, int end) {
     kv_w->Wait(kv_w->Pull(unique_keys, &w));
     auto v = std::vector<float>();
     kv_v->Wait(kv_v->Pull(unique_keys, &v));
+
 
     auto wx = std::vector<float>(line_num);
     for (int j = 0, i = 0; j < all_keys.size(); ) {
@@ -101,6 +103,7 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
     md.open("pred_" + filename + ".txt");
     if (!md.is_open()) std::cout << "open pred file failure!" << std::endl;
 
+
     snprintf(test_data_path, 1024, "%s-%05d", test_file_path, rank);
     xflow::LoadData test_data_loader(test_data_path, ((size_t)2) << 20);
     test_data = &(test_data_loader.m_data);
@@ -116,10 +119,13 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
             pool->enqueue(std::bind(&FMWorker::calculate_pctr, this, start, end));
         }
         while (calculate_pctr_thread_finish_num > 0) usleep(10);
+
     }
     md.close();
+
     test_data = NULL;
     base_->calculate_auc(test_auc_vec);
+
 }
 
 void FMWorker::calculate_gradient(std::vector<Base::sample_key>& all_keys,
@@ -199,6 +205,33 @@ void FMWorker::calculate_loss(std::vector<float>& w,
     }
 }
 
+void FMWorker::dump_w_v(){
+    mld.open("model/model_" + std::to_string(ps::MyRank()) + ".txt");
+    if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
+    for(auto& item : store_w){
+        mld << item.first << "\t" <<item.second << "\t";
+        for (auto& val:store_v[item.first]){
+            mld << val <<",";
+        }
+        mld << std::endl;
+    }
+    mld.close();
+}
+
+void FMWorker::save_w_v(std::vector<float>& w, std::vector<float>& v, std::vector<ps::Key>& unique_keys){
+    std::cout<<"fid "<< unique_keys.size() <<" w "<< w.size() <<" v "<< v.size() << std::endl ;
+    for (size_t i = 0; i < unique_keys.size(); i++) {
+        size_t fid = (unique_keys)[i];
+        store_w[fid] = w[i];
+        std::vector<float> v_weight(10);
+        for(size_t j = 0 ; j < v_dim_; j++){
+            v_weight[j] = v[i * v_dim_ + j];
+         }
+         store_v[fid] = v_weight;
+    }
+    std::cout<<"store w "<< store_w.size() <<" v "<< store_v.size() << std::endl;
+}
+
 void FMWorker::update(int start, int end) {
     size_t idx = 0;
     auto all_keys = std::vector<Base::sample_key>();
@@ -226,7 +259,6 @@ void FMWorker::update(int start, int end) {
     auto push_w_gradient = std::vector<float>(keys_size);
     auto v = std::vector<float>();
     kv_v->Wait(kv_v->Pull(unique_keys, &v));
-
     auto push_v_gradient = std::vector<float>(keys_size * v_dim_);
 
     auto loss = std::vector<float>(end - start);
@@ -236,6 +268,13 @@ void FMWorker::update(int start, int end) {
 
     kv_w->Wait(kv_w->Push(unique_keys, push_w_gradient));
     kv_v->Wait(kv_v->Push(unique_keys, push_v_gradient));
+    w.clear();
+    v.clear();
+    kv_w->Wait(kv_w->Pull(unique_keys, &w));
+    kv_v->Wait(kv_v->Pull(unique_keys, &v));
+    mutex.lock();
+    save_w_v(w, v, unique_keys);
+    mutex.unlock();
 
     --gradient_thread_finish_num;
 }
@@ -247,7 +286,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
     kv_w->Wait(kv_w->Push(key, val_w));
     kv_v->Wait(kv_v->Push(key, val_v));
     for (int epoch = 0; epoch < epochs; ++epoch) {
-//        std::cout << "block_size = " << (block_size<<20)  << std::endl;
+
         xflow::LoadData train_data_loader(train_data_path, block_size << 20);
         train_data = &(train_data_loader.m_data);
         int block = 0;
@@ -269,6 +308,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
         if ((epoch + 1) % 30 == 0) std::cout << "epoch : " << (epoch+1) << std::endl;
         train_data = NULL;
     }
+    dump_w_v();
 }
 
 void FMWorker::train() {
@@ -279,7 +319,8 @@ void FMWorker::train() {
     if (rank == 0) {
         std::cout << "FM AUC: " << std::endl;
         predict(pool_, rank, 0);
+
     }
-    std::cout << "train end......" << std::endl;
+    std::cout << "Worker " << rank << " train end......" << std::endl;
 }
 }    // namespace xflow

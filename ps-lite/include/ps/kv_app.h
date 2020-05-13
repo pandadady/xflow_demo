@@ -304,9 +304,7 @@ class KVServer : public SimpleApp {
      * \param req_data kv pairs of this request
      * \param server this pointer
      */
-    using ReqHandle = std::function<void(const KVMeta& req_meta,
-                                                                             const KVPairs<Val>& req_data,
-                                                                             KVServer* server)>;
+    using ReqHandle = std::function<void(const KVMeta& req_meta,const KVPairs<Val>& req_data, KVServer* server)>;
     void set_request_handle(const ReqHandle& request_handle) {
         CHECK(request_handle) << "invalid request handle";
         request_handle_ = request_handle;
@@ -319,7 +317,6 @@ class KVServer : public SimpleApp {
      */
     void Response(const KVMeta& req, const KVPairs<Val>& res = KVPairs<Val>());
 
- private:
     /** \brief internal receive handle */
     void Process(const Message& msg);
     /** \brief request handle */

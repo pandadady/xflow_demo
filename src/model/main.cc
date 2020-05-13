@@ -16,10 +16,12 @@ int main(int argc, char *argv[]) {
     if (ps::IsScheduler()) {
         std::cout << "start scheduler" << std::endl;
     }
+    xflow::Server* server = NULL;
     if (ps::IsServer()) {
         std::cout << "start server" << std::endl;
-        xflow::Server* server = new xflow::Server();
+        server = new xflow::Server();
     }
+
     ps::Start();
     if (ps::IsWorker()) {
         std::cout << "start worker" << std::endl;
@@ -43,5 +45,8 @@ int main(int argc, char *argv[]) {
             mvm_worker->train();
         }
     }
+
+
     ps::Finalize();
+
 }
