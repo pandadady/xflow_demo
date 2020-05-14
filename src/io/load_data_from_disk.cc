@@ -150,7 +150,7 @@ void LoadData::load_minibatch_hash_data_fread() {
                     if (field_index == 0) keyval.fgid = std::atof(pp);
                     if (field_index == 1) {
                         keyval.fid = h(std::string(pp));
-                        keyval.fid = std::string(pp);
+                        keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
                         break;
                     }
                     ++qq;
@@ -174,7 +174,7 @@ void LoadData::load_minibatch_hash_data_fread() {
                     if (field_index == 0) keyval.fgid = std::atof(pp);
                     if (field_index == 1) {
                         keyval.fid = h(std::string(pp));
-                        keyval.fid = std::string(pp);
+                        keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
                         break;
                     }
                     ++qq;
@@ -197,7 +197,7 @@ void LoadData::load_minibatch_hash_data_fread() {
                 if (field_index == 0) keyval.fgid = std::atof(pp);
                 if (field_index == 1) {
                     keyval.fid = h(std::string(pp));
-                    keyval.fid = std::string(pp);
+                    keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
                     break;
                 }
                 ++qq;

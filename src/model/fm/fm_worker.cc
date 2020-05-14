@@ -290,8 +290,8 @@ void FMWorker::batch_training(ThreadPool* pool) {
     val_v.assign(10, 0);
 
     std::cout<<"Push success " <<key.size()<< " "<< val_w.size() <<" " << val_v.size()<<std::endl;
-    kv_w->Wait(kv_w->Push(key, val_w, {}, 110, nullptr));
-    kv_v->Wait(kv_v->Push(key, val_v, {}, 110, nullptr));
+    kv_w->Wait(kv_w->Pull(key, &val_w, nullptr, 110, nullptr));
+    kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 110, nullptr));
 
     for (int epoch = 0; epoch < epochs; ++epoch) {
         xflow::LoadData train_data_loader(train_data_path, block_size << 20);
@@ -315,7 +315,9 @@ void FMWorker::batch_training(ThreadPool* pool) {
         if ((epoch + 1) % 30 == 0) std::cout << "epoch : " << (epoch+1) << std::endl;
         train_data = NULL;
     }
-    dump_w_v();
+    kv_w->Wait(kv_w->Pull(key, &val_w, nullptr, 119, nullptr));
+    kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 119, nullptr));
+//    dump_w_v();
 }
 
 void FMWorker::train() {
@@ -326,7 +328,6 @@ void FMWorker::train() {
     if (rank == 0) {
         std::cout << "FM AUC: " << std::endl;
         predict(pool_, rank, 0);
-
     }
     std::cout << "Worker " << rank << " train end......" << std::endl;
 }
