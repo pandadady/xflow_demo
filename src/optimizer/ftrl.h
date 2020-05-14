@@ -162,6 +162,7 @@ class FTRL {
                     num++;
                     store[fid] = val;
                     fids.push_back(fid);
+                    std::cout <<"store "<< store.size()<<std::endl;
                 }
                 std::cout <<"load success "<< num<< " "<<fids.size() <<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
