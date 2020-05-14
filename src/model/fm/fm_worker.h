@@ -65,9 +65,8 @@ class FMWorker {
     void update(int start, int end);
     void batch_training(ThreadPool* pool);
     void train();
-    void save_w_v(std::vector<float>& w, std::vector<float>& v, std::vector<ps::Key>& unique_keys);
+    void save_w_v( std::vector<ps::Key>& unique_keys, std::vector<float>& w, std::vector<float>& v);
     void dump_w_v();
-    bool load_w_v(std::vector<ps::Key>& key, std::vector<float>& v, std::vector<float>& w);
  public:
     int epochs = 60;
     std::string modelname;

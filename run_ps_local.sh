@@ -14,4 +14,4 @@ python mapfeat.py $workernum
 #sh ./scripts/local.sh 1 1 $root_path/build/test/src/xflow_lr $root_path/data/small_train $root_path/data/small_train $model_name $epochs
 sh ./scripts/local.sh 1 $workernum $root_path/build/test/src/xflow_lr $root_path/data/train.libsvm $root_path/data/test.libsvm $modeltype $epochs $modelname
 
-cat model/model.$modelname.* | sort -nk 1 | uniq -c > model/model.all
+cat model/model.$modelname.* |sort -n | uniq -c |awk -F " " '{print $2"\t"$3"\t"$4}'   > model/model.all

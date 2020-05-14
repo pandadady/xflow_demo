@@ -23,7 +23,16 @@ class FTRL {
  public:
     FTRL() {}
     ~FTRL() {}
-
+    static bool file_exists(const std::string &fpath) {
+        std::fstream file;
+        file.open(fpath.c_str(), std::ios::in);
+        if (!file) {
+            file.close();
+            return false;
+        }
+        file.close();
+        return true;
+    }
     typedef struct FTRLEntry_w {
         FTRLEntry_w(int k = w_dim) {
             w.resize(k, 0.0);
@@ -42,7 +51,32 @@ class FTRL {
             size_t keys_size = req_data.keys.size();
             size_t vals_size = req_data.vals.size();
             ps::KVPairs<float> res;
-
+            std::string model_path = "./model/model.all";
+            int num = 0 ;
+            if (req_meta.cmd == 110 && file_exists(model_path)&& store.size() == 0){
+                //load/////////////////////////////////////////////////////////////////////////////////////////////////
+                std::ifstream fin(model_path);
+                std::string line;
+                while (getline(fin, line)) {
+                    std::vector<std::string> items1;
+                    boost::split(items1, line, boost::is_any_of("\t"));
+                    //std::cout<<line<<" items1 " <<items1.size()<<std::endl;
+                    if (items1.size() != 3) {
+                        std::cout<<"error" <<items1.size()<<std::endl;
+                        continue;
+                    }
+                    std::vector<std::string> items2;
+                    boost::split(items2, items1[2], boost::is_any_of(","));
+                    //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
+                    ps::Key fid = atoi(items1[0].c_str());
+                    FTRLEntry_w val;
+                    val.w[0] = atof(items1[1].c_str());
+                    store[fid] = val;
+                    num++;
+                }
+                std::cout <<"load success "<<num<<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_w " << store.size()  <<std::endl;
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
             if (req_meta.push) {
                 w_dim = vals_size / keys_size;
                 CHECK_EQ(keys_size, vals_size / w_dim);
@@ -76,6 +110,10 @@ class FTRL {
                 }
             }
             server->Response(req_meta, res);
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            //std::cout <<"cmd "<< req_meta.cmd << " KVServerFTRLHandle_w " << store.size()  <<std::endl;
+
+
         }
     private:
         std::unordered_map<ps::Key, ftrlentry_w> store;
@@ -98,7 +136,37 @@ class FTRL {
                 ps::KVServer<float>* server) {
             size_t keys_size = req_data.keys.size();
             ps::KVPairs<float> res;
-            //std::cout << "KVServerFTRLHandle_v " << server->store_v.size()  <<std::endl;
+            std::string model_path = "./model/model.all";
+            int num = 0 ;
+            std::vector<ps::Key> fids;
+            if (req_meta.cmd == 110 && file_exists(model_path) && store.size()==0){
+                //load/////////////////////////////////////////////////////////////////////////////////////////////////
+                std::ifstream fin(model_path);
+                std::string line;
+                while (getline(fin, line)) {
+                    std::vector<std::string> items1;
+                    boost::split(items1, line, boost::is_any_of("\t"));
+                    //std::cout<<line<<" items1 " <<items1.size()<<std::endl;
+                    if (items1.size() != 3) {
+                        std::cout<<"error" <<items1.size()<<std::endl;
+                        continue;
+                    }
+                    std::vector<std::string> items2;
+                    boost::split(items2, items1[2], boost::is_any_of(","));
+                    //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
+                    ps::Key fid = atoi(items1[0].c_str());
+                    FTRLEntry_v val;
+                    for (int j=0; j < v_dim; j++){
+                         val.w[j] = atof(items2[j].c_str());
+                    }
+                    num++;
+                    store[fid] = val;
+                    fids.push_back(fid);
+                }
+                std::cout <<"load success "<< num<< " "<<fids.size() <<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+
             if (req_meta.push) {
                 size_t vals_size = req_data.vals.size();
                 CHECK_EQ(keys_size, vals_size / v_dim);
@@ -117,7 +185,7 @@ class FTRL {
                 }
 
                 FTRLEntry_v& val = store[key];
-                
+
                 for (int j = 0; j < v_dim; ++j) {
                     if (req_meta.push) {
                         float g = req_data.vals[i * v_dim + j];
@@ -141,6 +209,8 @@ class FTRL {
                 }
             }
             server->Response(req_meta, res);
+
+            //std::cout <<"cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
 
         }
     private:

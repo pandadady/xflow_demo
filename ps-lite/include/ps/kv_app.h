@@ -8,6 +8,7 @@
 #include <vector>
 #include "ps/base.h"
 #include "ps/simple_app.h"
+
 namespace ps {
 
 /**
@@ -317,6 +318,7 @@ class KVServer : public SimpleApp {
      */
     void Response(const KVMeta& req, const KVPairs<Val>& res = KVPairs<Val>());
 
+ private:
     /** \brief internal receive handle */
     void Process(const Message& msg);
     /** \brief request handle */
@@ -341,6 +343,7 @@ struct KVServerDefaultHandle {
         for (size_t i = 0; i < n; ++i) {
             Key key = req_data.keys[i];
             if (req_meta.push) {
+
                 store[key] += req_data.vals[i];
             } else {
                 res.vals[i] = store[key];
@@ -413,17 +416,21 @@ void KVWorker<Val>::DefaultSlicer(
     for (size_t i = 0; i < n; ++i) {
         if (i == 0) {
             pos[0] = std::lower_bound(begin, end, ranges[0].begin()) - begin;
+            //std::cout << ranges[0].begin() << " " <<std::lower_bound(begin, end, ranges[0].begin()) <<" " <<begin<< "  " << pos[0] <<std::endl;
             begin += pos[0];
+
         } else {
             CHECK_EQ(ranges[i-1].end(), ranges[i].begin());
         }
         size_t len = std::lower_bound(begin, end, ranges[i].end()) - begin;
+        //std::cout << ranges[i].end() << " " << std::lower_bound(begin, end, ranges[i].end()) <<" " <<begin<< "  " << len <<std::endl;
         begin += len;
         pos[i+1] = pos[i] + len;
 
         // don't send it to severs for empty kv
         sliced->at(i).first = (len != 0);
     }
+    //std::cout<<n<<" " <<pos[n]<< "  " << send.keys.size() <<std::endl;
     CHECK_EQ(pos[n], send.keys.size());
     if (send.keys.empty()) return;
 

@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
     ps::Start();
     if (ps::IsWorker()) {
-        std::cout << "start worker" << std::endl;
+        //std::cout << "start worker" << std::endl;
         int epochs = std::atoi(argv[4]);
         std::string modelname = argv[5];
         std::cout << modelname << std::endl;
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 //            lr_worker->train();
 //        }
         if (*(argv[3]) == '1') {
-            std::cout << "start FM " << std::endl;
+            //std::cout << "start FM " << std::endl;
             xflow::FMWorker* fm_worker = new xflow::FMWorker(argv[1], argv[2]);
             fm_worker->epochs = epochs;
             fm_worker->modelname = modelname;
