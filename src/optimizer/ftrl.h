@@ -60,7 +60,7 @@ class FTRL {
                 while (getline(fin, line)) {
                     std::vector<std::string> items1;
                     boost::split(items1, line, boost::is_any_of("\t"));
-                    //std::cout<<line<<" items1 " <<items1.size()<<std::endl;
+                    //std::cout<<line<<std::endl;
                     if (items1.size() != 3) {
                         std::cout<<"error" <<items1.size()<<std::endl;
                         continue;
@@ -68,10 +68,12 @@ class FTRL {
                     std::vector<std::string> items2;
                     boost::split(items2, items1[2], boost::is_any_of(","));
                     //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
-                    ps::Key fid = atoi(items1[0].c_str());
                     FTRLEntry_w val;
                     val.w[0] = atof(items1[1].c_str());
-                    store[fid] = val;
+                    //strtoull (love.c_str(), NULL, 0);
+                    store.insert( std::make_pair(strtoull(items1[0].c_str(), NULL, 0), val ));
+                    //std::cout <<"fid w "<<strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
+                    //std::cout <<"store w "<< store.size()<<std::endl;
                     num++;
                 }
                 std::cout <<"load success "<<num<<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_w " << store.size()  <<std::endl;
@@ -146,25 +148,23 @@ class FTRL {
                 while (getline(fin, line)) {
                     std::vector<std::string> items1;
                     boost::split(items1, line, boost::is_any_of("\t"));
-                    //std::cout<<line<<" items1 " <<items1.size()<<std::endl;
+                    //std::cout<<line<<std::endl;
                     if (items1.size() != 3) {
                         std::cout<<"error" <<items1.size()<<std::endl;
                         continue;
                     }
                     std::vector<std::string> items2;
                     boost::split(items2, items1[2], boost::is_any_of(","));
-                    //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
-                    ps::Key fid = atoi(items1[0].c_str());
                     FTRLEntry_v val;
                     for (int j=0; j < v_dim; j++){
                          val.w[j] = atof(items2[j].c_str());
                     }
                     num++;
-                    store[fid] = val;
-                    fids.push_back(fid);
-                    std::cout <<"store "<< store.size()<<std::endl;
+                    store.insert( std::make_pair( strtoull(items1[0].c_str(), NULL, 0), val ));
+                    //std::cout <<"fid v "<< strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
+                    //std::cout <<"store v "<< store.size()<<std::endl;
                 }
-                std::cout <<"load success "<< num<< " "<<fids.size() <<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
+                std::cout <<"load success "<< num <<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
