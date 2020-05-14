@@ -51,22 +51,34 @@ class FTRL {
             size_t keys_size = req_data.keys.size();
             size_t vals_size = req_data.vals.size();
             ps::KVPairs<float> res;
-            std::string model_path = "./model/model.all";
             int num = 0 ;
-            if (req_meta.cmd == 110 && file_exists(model_path)&& store.size() == 0){
+            if (req_meta.cmd == 119 ){
+                finish_work++;
+            }
+            if (req_meta.cmd == 119 && finish_work == 5){
+                std::ofstream mld;//ģ���ļ�
+                mld.open("model/model.all.w" );
+                if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
+                for(auto&item : store){
+                    mld << item.first << "\t" <<item.second.w[0] ;
+                    mld << std::endl;
+                }
+                mld.close();
+                return;
+            }
+            if (req_meta.cmd == 110 && file_exists("model/model.all.w" )&& store.size() == 0){
+				finish_work = 0;
                 //load/////////////////////////////////////////////////////////////////////////////////////////////////
-                std::ifstream fin(model_path);
+                std::ifstream fin("model/model.all.w" );
                 std::string line;
                 while (getline(fin, line)) {
                     std::vector<std::string> items1;
                     boost::split(items1, line, boost::is_any_of("\t"));
                     //std::cout<<line<<std::endl;
-                    if (items1.size() != 3) {
+                    if (items1.size() != 2) {
                         std::cout<<"error" <<items1.size()<<std::endl;
                         continue;
                     }
-                    std::vector<std::string> items2;
-                    boost::split(items2, items1[2], boost::is_any_of(","));
                     //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
                     FTRLEntry_w val;
                     val.w[0] = atof(items1[1].c_str());
@@ -89,6 +101,12 @@ class FTRL {
             //std::cout << "KVServerFTRLHandle_w " << server->store_w.size()  <<std::endl;
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
+                if (store.find(key) == store.end()){
+                    FTRLEntry_w val(1);
+                    val.w[0] = Base::local_normal_real_distribution<double>(0.0, 1.0)(Base::local_random_engine()) * 1e-2;
+                    store[key] = val;
+                }
+
                 FTRLEntry_w& val = store[key];
                 for (int j = 0; j < w_dim; ++j) {
                     if (req_meta.push) {
@@ -118,6 +136,8 @@ class FTRL {
 
         }
     private:
+
+        int finish_work ;
         std::unordered_map<ps::Key, ftrlentry_w> store;
     };
 
@@ -138,23 +158,39 @@ class FTRL {
                 ps::KVServer<float>* server) {
             size_t keys_size = req_data.keys.size();
             ps::KVPairs<float> res;
-            std::string model_path = "./model/model.all";
             int num = 0 ;
-            std::vector<ps::Key> fids;
-            if (req_meta.cmd == 110 && file_exists(model_path) && store.size()==0){
+            if (req_meta.cmd == 119 ){
+                finish_work++;
+            }
+            if (req_meta.cmd == 119 && finish_work == 5){
+                std::ofstream mld;//ģ���ļ�
+                mld.open("model/model.all.v" );
+                if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
+                for(auto&item : store){
+                    mld << item.first << "\t";
+                    for(auto& val : item.second.w){
+                        mld <<val<<",";
+                    }
+                    mld << std::endl;
+                }
+                mld.close();
+                return;
+            }
+            if (req_meta.cmd == 110 && file_exists("model/model.all.v") && store.size()==0){
+                finish_work = 0;
                 //load/////////////////////////////////////////////////////////////////////////////////////////////////
-                std::ifstream fin(model_path);
+                std::ifstream fin("model/model.all.v");
                 std::string line;
                 while (getline(fin, line)) {
                     std::vector<std::string> items1;
                     boost::split(items1, line, boost::is_any_of("\t"));
                     //std::cout<<line<<std::endl;
-                    if (items1.size() != 3) {
+                    if (items1.size() != 2) {
                         std::cout<<"error" <<items1.size()<<std::endl;
                         continue;
                     }
                     std::vector<std::string> items2;
-                    boost::split(items2, items1[2], boost::is_any_of(","));
+                    boost::split(items2, items1[1], boost::is_any_of(","));
                     FTRLEntry_v val;
                     for (int j=0; j < v_dim; j++){
                          val.w[j] = atof(items2[j].c_str());
@@ -178,7 +214,7 @@ class FTRL {
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
                 if (store.find(key) == store.end()) {
-                    FTRLEntry_v val(v_dim);;
+                    FTRLEntry_v val(v_dim);
                     for (int k = 0; k < v_dim; ++k) {
                         val.w[k] = Base::local_normal_real_distribution<double>(0.0, 1.0)(Base::local_random_engine()) * 1e-2;
                     }
@@ -215,6 +251,8 @@ class FTRL {
 
         }
     private:
+
+        int finish_work ;
         std::unordered_map<ps::Key, ftrlentry_v> store;
     };
 
