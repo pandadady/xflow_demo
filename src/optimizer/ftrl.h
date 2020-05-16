@@ -52,11 +52,18 @@ class FTRL {
             size_t vals_size = req_data.vals.size();
             ps::KVPairs<float> res;
             int num = 0 ;
+            if (req_meta.push) {
+                w_dim = vals_size / keys_size;
+                CHECK_EQ(keys_size, vals_size / w_dim);
+            } else {
+                res.keys = req_data.keys;
+                res.vals.resize(keys_size * w_dim);
+            }
             if (req_meta.cmd == 119 ){
                 finish_work++;
             }
             if (req_meta.cmd == 119 && finish_work == 5){
-                std::ofstream mld;//ģ���ļ�
+                std::ofstream mld;
                 mld.open("model/model.all.w" );
                 if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
                 for(auto&item : store){
@@ -64,6 +71,8 @@ class FTRL {
                     mld << std::endl;
                 }
                 mld.close();
+                std::cout <<"dump success "<< num <<" cmd "<< req_meta.cmd << " finish_work " << finish_work <<std::endl;
+                server->Response(req_meta, res);
                 return;
             }
             if (req_meta.cmd == 110 && file_exists("model/model.all.w" )&& store.size() == 0){
@@ -91,13 +100,7 @@ class FTRL {
                 std::cout <<"load success "<<num<<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_w " << store.size()  <<std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
             }
-            if (req_meta.push) {
-                w_dim = vals_size / keys_size;
-                CHECK_EQ(keys_size, vals_size / w_dim);
-            } else {
-                res.keys = req_data.keys;
-                res.vals.resize(keys_size * w_dim);
-            }
+
             //std::cout << "KVServerFTRLHandle_w " << server->store_w.size()  <<std::endl;
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
@@ -159,11 +162,18 @@ class FTRL {
             size_t keys_size = req_data.keys.size();
             ps::KVPairs<float> res;
             int num = 0 ;
+            if (req_meta.push) {
+                size_t vals_size = req_data.vals.size();
+                CHECK_EQ(keys_size, vals_size / v_dim);
+            } else {
+                res.keys = req_data.keys;
+                res.vals.resize(keys_size * v_dim);
+            }
             if (req_meta.cmd == 119 ){
                 finish_work++;
             }
-            if (req_meta.cmd == 119 && finish_work == 5){
-                std::ofstream mld;//ģ���ļ�
+            if (req_meta.cmd == 119&& finish_work == 5){
+                std::ofstream mld;
                 mld.open("model/model.all.v" );
                 if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
                 for(auto&item : store){
@@ -174,6 +184,8 @@ class FTRL {
                     mld << std::endl;
                 }
                 mld.close();
+                std::cout <<"dump success "<< num <<" cmd "<< req_meta.cmd << " finish_work " << finish_work <<std::endl;
+                server->Response(req_meta, res);
                 return;
             }
             if (req_meta.cmd == 110 && file_exists("model/model.all.v") && store.size()==0){
@@ -204,13 +216,7 @@ class FTRL {
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
-            if (req_meta.push) {
-                size_t vals_size = req_data.vals.size();
-                CHECK_EQ(keys_size, vals_size / v_dim);
-            } else {
-                res.keys = req_data.keys;
-                res.vals.resize(keys_size * v_dim);
-            }
+
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
                 if (store.find(key) == store.end()) {
@@ -246,6 +252,7 @@ class FTRL {
                 }
             }
             server->Response(req_meta, res);
+
 
             //std::cout <<"cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
 

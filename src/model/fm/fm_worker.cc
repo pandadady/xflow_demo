@@ -289,7 +289,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
     val_w.push_back(0);
     val_v.assign(10, 0);
 
-    std::cout<<"Push success " <<key.size()<< " "<< val_w.size() <<" " << val_v.size()<<std::endl;
+    std::cout<<"Push success 110 " << ps::MyRank()<<std::endl;
     kv_w->Wait(kv_w->Pull(key, &val_w, nullptr, 110, nullptr));
     kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 110, nullptr));
 
@@ -315,8 +315,15 @@ void FMWorker::batch_training(ThreadPool* pool) {
         if ((epoch + 1) % 30 == 0) std::cout << "epoch : " << (epoch+1) << std::endl;
         train_data = NULL;
     }
+    key.clear();
+    val_w.clear();
+    val_v.clear();
+    key.push_back(0);
+    val_w.push_back(0);
+    val_v.assign(10, 0);
     kv_w->Wait(kv_w->Pull(key, &val_w, nullptr, 119, nullptr));
     kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 119, nullptr));
+    std::cout<<"Push success 119 " << ps::MyRank()<<std::endl;
 //    dump_w_v();
 }
 
