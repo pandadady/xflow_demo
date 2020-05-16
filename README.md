@@ -18,7 +18,7 @@ Distributed LR With Parameter Server
 ## 3.Run
 ### 3.1 Local 
 ```
-sh run_ps_local.sh test
+        sh run_ps_local.sh test
 ```
 
 ### 3.2 Distributed
