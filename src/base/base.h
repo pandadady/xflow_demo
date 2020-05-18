@@ -109,7 +109,7 @@ class Base{
     }
     void auc(std::vector<auc_key>& auc_vec) {
         std::sort(auc_vec.begin(), auc_vec.end(), [](const auc_key& a, const auc_key& b){
-                return a.pctr > b.pctr;
+                return a.pctr < b.pctr;
                 });
         float area = 0.0;
         long pos_cnt  = 0;
@@ -121,7 +121,7 @@ class Base{
             if (auc_vec[i].label == 1) {
                 pos_cnt += 1;
                 rank = i+1;
-                ranksum =  ranksum+rank;
+                ranksum =  ranksum + rank;
             } else {
                 neg_cnt += 1;
             }
