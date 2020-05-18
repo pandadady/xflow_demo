@@ -105,6 +105,7 @@ void LoadData::load_minibatch_hash_data_fread() {
     std::vector<kv> sample;
     m_data.label.clear();
     m_data.fea_matrix.clear();
+
     if (bmax < btop) {
         memmove(&buf[0], &buf[bmax], (btop - bmax) * sizeof(char));
     }
@@ -212,6 +213,9 @@ void LoadData::load_minibatch_hash_data_fread() {
             // std::cout << "fgid = " << keyval.fgid << std::endl;
         }
         // return;
+        if (m_data.fea_matrix.size() %1000 == 0){
+            std::cout << "fid = " << keyval.fid << std::endl;
+        }
         m_data.fea_matrix.push_back(sample);
     }
 }

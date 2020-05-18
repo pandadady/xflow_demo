@@ -110,7 +110,7 @@ def trans(filename, targetname):
             items.append([slotid, fid, weight])
         fo.write(label+'\t'+" ".join([x[0]+":"+x[1]+":"+x[2] for x in items])+'\n')
         num+=1;
-        if num==1000:break
+        if num==10000:break
     fo.close()
 
 def main(workernum):
@@ -162,5 +162,5 @@ def main(workernum):
     target = 'data/test.libsvm-0000' + str(0)
     trans(filepath, target)
 if __name__ == '__main__':
-    workernum = int(sys.argv[1:][0]) 
+    workernum = int(sys.argv[1:][0])
     main(workernum)

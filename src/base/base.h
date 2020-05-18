@@ -112,10 +112,10 @@ class Base{
                 return a.pctr > b.pctr;
                 });
         float area = 0.0;
-        int pos_cnt  = 0;
-        int neg_cnt  = 0;
-        int rank  = 0;
-        int ranksum  = 0;
+        long pos_cnt  = 0;
+        long neg_cnt  = 0;
+        long rank  = 0;
+        long ranksum  = 0;
         std::vector<int> ranklist ;
         for (size_t i = 0; i < auc_vec.size(); ++i) {
             if (auc_vec[i].label == 1) {
