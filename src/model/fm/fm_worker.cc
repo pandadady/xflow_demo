@@ -112,12 +112,14 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
         test_data_loader.load_minibatch_hash_data_fread();
         if (test_data->fea_matrix.size() <= 0) break;
         int thread_size = test_data->fea_matrix.size() / core_num;
-        std::cout << test_data->fea_matrix.size()<<" " << thread_size<<" "  << core_num<<" " << std::endl;
+        int start = 0;
+        int end = 0;
         calculate_pctr_thread_finish_num = core_num;
         for (int i = 0; i < core_num; ++i) {
-            int start = i * thread_size;
-            int end = (i + 1)* thread_size;
+            start = i * thread_size;
+            end = (i + 1)* thread_size;
             pool->enqueue(std::bind(&FMWorker::calculate_pctr, this, start, end));
+            std::cout <<start<<" " << end << std::endl;
         }
         while (calculate_pctr_thread_finish_num > 0) usleep(10);
 
@@ -126,6 +128,7 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
 
     test_data = NULL;
     base_->calculate_auc(test_auc_vec);
+    base_->auc(test_auc_vec);
 
 }
 

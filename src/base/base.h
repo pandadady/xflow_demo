@@ -108,6 +108,37 @@ class Base{
                 << " fp = " << auc_vec.size() - tp_n << std::endl;
         }
     }
+    void auc(std::vector<auc_key>& auc_vec) {
+        std::sort(auc_vec.begin(), auc_vec.end(), [](const auc_key& a, const auc_key& b){
+                return a.pctr > b.pctr;
+                });
+        float area = 0.0;
+        int pos_cnt  = 0;
+        int neg_cnt  = 0;
+        int rank  = 0;
+        int ranksum  = 0;
+        for (size_t i = 0; i < auc_vec.size(); ++i) {
+            if (auc_vec[i].label == 1) {
+                pos_cnt += 1;
+                rank+=1;
+            } else {
+                neg_cnt += 1;
+            }
+            ranksum +=rank;
+            logloss += auc_vec[i].label * std::log(auc_vec[i].pctr)+
+                + (1.0 - auc_vec[i].label) * std::log(1.0 - auc_vec[i].pctr);
+        }
+        logloss = logloss/auc_vec.size();
+        std::cout << "logloss: " << logloss << "\t";
+        if (pos_cnt == 0 || pos_cnt == auc_vec.size()) {
+            std::cout << "tp_n = " << pos_cnt << std::endl;
+        } else {
+            area = (ranksum*1.0 - 1.0*pos_cnt*(pos_cnt+1)/2) / (1.0*pos_cnt*neg_cnt);
+            std::cout << "auc = " << area
+                << "\ttp = " << pos_cnt
+                << " fp = " << neg_cnt<< std::endl;
+        }
+    }
 
  private:
     float logloss = 0.0;
