@@ -162,5 +162,5 @@ def main(workernum):
     target = 'data/test.libsvm-0000' + str(0)
     trans(filepath, target)
 if __name__ == '__main__':
-    workernum = int(sys.argv[1:][0]) + 1
+    workernum = int(sys.argv[1:][0]) 
     main(workernum)
