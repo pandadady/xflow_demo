@@ -101,8 +101,8 @@ def trans(filename, targetname):
                 slotid=1
             if i>=2:
                 slotid=i
-            # fid = str(GetFidHashUint64(i+1, arr[i]))
-            fid = arr[i]
+            fid = str(GetFidHashUint64(i+1, arr[i]))
+            #fid = arr[i]
             if fid=="-1":
                 continue
             weight = "0.5"
