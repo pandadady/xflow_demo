@@ -19,9 +19,10 @@ int main(int argc, char *argv[]) {
     xflow::Server* server = NULL;
     if (ps::IsServer()) {
         std::cout << "start server" << std::endl;
-        server = new xflow::Server();
         std::string modelname = argv[5];
         int workernum = std::atoi(argv[6]);
+        server = new xflow::Server(workernum, modelname);
+
     }
 
     ps::Start();

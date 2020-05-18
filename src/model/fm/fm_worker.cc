@@ -105,8 +105,11 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
 
 
     snprintf(test_data_path, 1024, "%s-%05d", test_file_path, rank);
-    xflow::LoadData test_data_loader(test_data_path, ((size_t)2) << 20);
+    int load_size = block_size << 20;
+    xflow::LoadData test_data_loader(test_data_path, load_size);
     test_data = &(test_data_loader.m_data);
+    //std::cout <<"predict load_size " << load_size << std::endl;
+    std::cout <<"Worker No. is = " << ps::MyRank()<< " test " << std::endl;
     test_auc_vec.clear();
     while (true) {
         test_data_loader.load_minibatch_hash_data_fread();
@@ -114,14 +117,20 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
         int thread_size = test_data->fea_matrix.size() / core_num;
         int start = 0;
         int end = 0;
-        calculate_pctr_thread_finish_num = core_num;
+        calculate_pctr_thread_finish_num = core_num + 1 ;
         for (int i = 0; i < core_num; ++i) {
             start = i * thread_size;
             end = (i + 1)* thread_size;
             pool->enqueue(std::bind(&FMWorker::calculate_pctr, this, start, end));
-            std::cout <<start<<" " << end << std::endl;
+            //std::cout <<start<<" " << end << std::endl;
         }
-        while (calculate_pctr_thread_finish_num > 0) usleep(10);
+        if (test_data->fea_matrix.size() > end){
+            start = end;
+            end = test_data->fea_matrix.size();
+            pool->enqueue(std::bind(&FMWorker::calculate_pctr, this, start, end));
+        }
+        std::cout <<start<<" " << end << std::endl;
+        while (calculate_pctr_thread_finish_num > 0) usleep(5);
 
     }
     md.close();
@@ -297,18 +306,30 @@ void FMWorker::batch_training(ThreadPool* pool) {
     kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 110, nullptr));
 
     for (int epoch = 0; epoch < epochs; ++epoch) {
-        xflow::LoadData train_data_loader(train_data_path, block_size << 20);
+        int load_size = block_size << 20;
+        xflow::LoadData train_data_loader(train_data_path, load_size);
         train_data = &(train_data_loader.m_data);
+        std::cout <<"Worker No. is = " << ps::MyRank()<< " train_epoch "<< epoch << std::endl;
         int block = 0;
         while (1) {
             train_data_loader.load_minibatch_hash_data_fread();
             if (train_data->fea_matrix.size() <= 0) break;
             int thread_size = train_data->fea_matrix.size() / core_num;
-            gradient_thread_finish_num = core_num;
+            gradient_thread_finish_num = core_num + 1;
+            int start = 0;
+            int end = 0;
+
             for (int i = 0; i < core_num; ++i) {
-                int start = i * thread_size;
-                int end = (i + 1)* thread_size;
+                start = i * thread_size;
+                end = (i + 1)* thread_size;
                 pool->enqueue(std::bind(&FMWorker::update, this, start, end));
+            }
+            if (train_data->fea_matrix.size() > end){
+                start = end;
+                end = train_data->fea_matrix.size();
+                std::cout <<"Worker No. is = " << ps::MyRank() <<" start " << start <<" end " << end << std::endl;
+                pool->enqueue(std::bind(&FMWorker::update, this, start, end));
+
             }
             while (gradient_thread_finish_num > 0) {
                 usleep(5);
@@ -332,7 +353,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
 
 void FMWorker::train() {
     rank = ps::MyRank();
-    std::cout << " Worker No. is = " << rank << std::endl;
+    std::cout << "Worker No. is = " << rank << std::endl;
     snprintf(train_data_path, 1024, "%s-%05d", train_file_path, rank);
     batch_training(pool_);
     if (rank == 0) {

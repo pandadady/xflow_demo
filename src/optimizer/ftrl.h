@@ -51,7 +51,6 @@ class FTRL {
             size_t keys_size = req_data.keys.size();
             size_t vals_size = req_data.vals.size();
             ps::KVPairs<float> res;
-            int num = 0 ;
             if (req_meta.push) {
                 w_dim = vals_size / keys_size;
                 CHECK_EQ(keys_size, vals_size / w_dim);
@@ -59,10 +58,16 @@ class FTRL {
                 res.keys = req_data.keys;
                 res.vals.resize(keys_size * w_dim);
             }
-            if (req_meta.cmd == 119 ){
-                finish_work++;
+
+            if (req_meta.cmd == 119){
+                dump_start_count++;
+                std::cout <<"dump w cmd "<< req_meta.cmd << " workernum " << workernum << " " << dump_start_count <<std::endl;
             }
-            if (req_meta.cmd == 119 && finish_work == 5){
+            if (req_meta.cmd == 110){
+                load_start_count++;
+                std::cout <<"load w cmd "<< req_meta.cmd << " workernum " << workernum << " " << load_start_count <<std::endl;
+            }
+            if (req_meta.cmd == 119 && workernum == dump_start_count){
                 std::ofstream mld;
                 mld.open("model/model.all.w" );
                 if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
@@ -71,12 +76,11 @@ class FTRL {
                     mld << std::endl;
                 }
                 mld.close();
-                std::cout <<"dump success "<< num <<" cmd "<< req_meta.cmd << " finish_work " << finish_work <<std::endl;
+                std::cout <<"dump w success " << store.size()<<std::endl;
                 server->Response(req_meta, res);
                 return;
             }
-            if (req_meta.cmd == 110 && file_exists("model/model.all.w" )&& store.size() == 0){
-				finish_work = 0;
+            if (req_meta.cmd == 110 && file_exists("model/model.all.w" )&& workernum == load_start_count){
                 //load/////////////////////////////////////////////////////////////////////////////////////////////////
                 std::ifstream fin("model/model.all.w" );
                 std::string line;
@@ -95,9 +99,8 @@ class FTRL {
                     store.insert( std::make_pair(strtoull(items1[0].c_str(), NULL, 0), val ));
                     //std::cout <<"fid w "<<strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
                     //std::cout <<"store w "<< store.size()<<std::endl;
-                    num++;
                 }
-                std::cout <<"load success "<<num<<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_w " << store.size()  <<std::endl;
+                std::cout <<"load w success " << store.size()<<std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
@@ -138,9 +141,10 @@ class FTRL {
 
 
         }
-    private:
-
-        int finish_work ;
+    public:
+        int workernum;
+        int dump_start_count ;
+        int load_start_count ;
         std::unordered_map<ps::Key, ftrlentry_w> store;
     };
 
@@ -161,7 +165,6 @@ class FTRL {
                 ps::KVServer<float>* server) {
             size_t keys_size = req_data.keys.size();
             ps::KVPairs<float> res;
-            int num = 0 ;
             if (req_meta.push) {
                 size_t vals_size = req_data.vals.size();
                 CHECK_EQ(keys_size, vals_size / v_dim);
@@ -169,10 +172,16 @@ class FTRL {
                 res.keys = req_data.keys;
                 res.vals.resize(keys_size * v_dim);
             }
+
             if (req_meta.cmd == 119 ){
-                finish_work++;
+                dump_start_count++;
+                std::cout <<"dump v cmd "<< req_meta.cmd << " workernum " << workernum << " " << dump_start_count <<std::endl;
             }
-            if (req_meta.cmd == 119&& finish_work == 5){
+            if (req_meta.cmd == 110){
+                load_start_count++;
+                std::cout <<"load v cmd "<< req_meta.cmd << " workernum " << workernum << " " << load_start_count <<std::endl;
+            }
+            if (req_meta.cmd == 119 && workernum == dump_start_count){
                 std::ofstream mld;
                 mld.open("model/model.all.v" );
                 if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
@@ -184,12 +193,12 @@ class FTRL {
                     mld << std::endl;
                 }
                 mld.close();
-                std::cout <<"dump success "<< num <<" cmd "<< req_meta.cmd << " finish_work " << finish_work <<std::endl;
+                std::cout <<"dump v success " << store.size()<<std::endl;
                 server->Response(req_meta, res);
                 return;
             }
-            if (req_meta.cmd == 110 && file_exists("model/model.all.v") && store.size()==0){
-                finish_work = 0;
+            if (req_meta.cmd == 110 && file_exists("model/model.all.v") && workernum == load_start_count){
+
                 //load/////////////////////////////////////////////////////////////////////////////////////////////////
                 std::ifstream fin("model/model.all.v");
                 std::string line;
@@ -207,12 +216,11 @@ class FTRL {
                     for (int j=0; j < v_dim; j++){
                          val.w[j] = atof(items2[j].c_str());
                     }
-                    num++;
                     store.insert( std::make_pair( strtoull(items1[0].c_str(), NULL, 0), val ));
                     //std::cout <<"fid v "<< strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
                     //std::cout <<"store v "<< store.size()<<std::endl;
                 }
-                std::cout <<"load success "<< num <<" cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
+                std::cout <<"load v success " << store.size()<< std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
@@ -257,9 +265,11 @@ class FTRL {
             //std::cout <<"cmd "<< req_meta.cmd << " KVServerFTRLHandle_v " << store.size()  <<std::endl;
 
         }
-    private:
-
-        int finish_work ;
+    public:
+        int workernum;
+        int dump_start_count ;
+        int load_start_count ;
+        std::string modelname ;
         std::unordered_map<ps::Key, ftrlentry_v> store;
     };
 

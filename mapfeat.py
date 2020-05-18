@@ -101,8 +101,8 @@ def trans(filename, targetname):
                 slotid=1
             if i>=2:
                 slotid=i
-            fid = str(GetFidHashUint64(i+1, arr[i]))
-            #fid = arr[i]
+            # fid = str(GetFidHashUint64(i+1, arr[i]))
+            fid = arr[i]
             if fid=="-1":
                 continue
             weight = "0.5"
@@ -110,14 +110,14 @@ def trans(filename, targetname):
             items.append([slotid, fid, weight])
         fo.write(label+'\t'+" ".join([x[0]+":"+x[1]+":"+x[2] for x in items])+'\n')
         num+=1;
-        if num==1000:break
+        #if num==1000:break
     fo.close()
 
 def main(workernum):
     fpath = '../ctr_data/split_data/'
     flist = os.listdir(fpath)
     flist_selects = random.sample(flist, workernum)
-
+    print(flist_selects)
     for i in range(len(flist_selects[1:])):
         filepath = fpath + flist_selects[1:][i]
         target = 'data/train.libsvm-0000'+str(i)
