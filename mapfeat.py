@@ -110,19 +110,55 @@ def trans(filename, targetname):
             items.append([slotid, fid, weight])
         fo.write(label+'\t'+" ".join([x[0]+":"+x[1]+":"+x[2] for x in items])+'\n')
         num+=1;
-        #if num==1000:break
+        if num==1000:break
     fo.close()
 
 def main(workernum):
     fpath = '../ctr_data/split_data/'
-    flist = os.listdir(fpath)
-    flist_selects = random.sample(flist, workernum)
-    print(flist_selects)
-    for i in range(len(flist_selects[1:])):
-        filepath = fpath + flist_selects[1:][i]
+    flist_train_selects = []
+    flist_test_selects = []
+    record = {}
+    if os.path.exists("./data/train_list"):
+        with open("./data/train_list") as f :
+            for line in f:
+                line = line.strip()
+                terms = line.split()
+                if len(terms)!=2:continue
+                filen = terms[0]
+                used = terms[1]
+                if used  == "un" and len(flist_train_selects)!= workernum:
+                    flist_train_selects.append(filen);
+                    used = "train"
+                elif used  == "un" and len(flist_test_selects)!=1:
+                    flist_test_selects.append(filen);
+                    used = "test"
+                record[filen] = used
+    else:
+        flist = os.listdir(fpath)
+        for filen in flist:
+            used="un"
+            if len(flist_train_selects) != workernum:
+                flist_train_selects.append(filen);
+                used = "train"
+            elif len(flist_test_selects) != 1:
+                flist_test_selects.append(filen);
+                used = "test"
+            record[filen] = used
+    f = open("./data/train_list", "w")
+    for filen in record:
+        f.write(filen + '\t' + record[filen] + '\n')
+    f.close()
+    print(flist_train_selects)
+    print(flist_test_selects)
+    if len(flist_train_selects) < workernum or len(flist_test_selects) !=1:
+        print("data not enough!!!!!")
+        return
+    for i in range(len(flist_train_selects)):
+        filepath = fpath + flist_train_selects[i]
         target = 'data/train.libsvm-0000'+str(i)
-        trans(filepath,target)
-    filepath = fpath + flist_selects[0]
+        trans(filepath, target)
+
+    filepath = fpath + flist_test_selects[0]
     target = 'data/test.libsvm-0000' + str(0)
     trans(filepath, target)
 if __name__ == '__main__':

@@ -94,8 +94,7 @@ class Base{
             } else {
                 area += tp_n;
             }
-            logloss += auc_vec[i].label * std::log2(auc_vec[i].pctr)+
-                + (1.0 - auc_vec[i].label) * std::log2(1.0 - auc_vec[i].pctr);
+            logloss = logloss+ auc_vec[i].label * std::log2(auc_vec[i].pctr)+ (1.0 - auc_vec[i].label) * std::log2(1.0 - auc_vec[i].pctr);
         }
         logloss = logloss/auc_vec.size();
         std::cout << "logloss: " << logloss << "\t";
@@ -117,22 +116,26 @@ class Base{
         int neg_cnt  = 0;
         int rank  = 0;
         int ranksum  = 0;
+        std::vector<int> ranklist ;
         for (size_t i = 0; i < auc_vec.size(); ++i) {
             if (auc_vec[i].label == 1) {
                 pos_cnt += 1;
-                rank+=1;
+                rank = i+1;
+                ranksum =  ranksum+rank;
             } else {
                 neg_cnt += 1;
             }
-            ranksum +=rank;
-            logloss += auc_vec[i].label * std::log(auc_vec[i].pctr)+
-                + (1.0 - auc_vec[i].label) * std::log(1.0 - auc_vec[i].pctr);
+            logloss = logloss+ auc_vec[i].label * std::log2(auc_vec[i].pctr)+ (1.0 - auc_vec[i].label) * std::log2(1.0 - auc_vec[i].pctr);
         }
+
         logloss = logloss/auc_vec.size();
         std::cout << "logloss: " << logloss << "\t";
         if (pos_cnt == 0 || pos_cnt == auc_vec.size()) {
             std::cout << "tp_n = " << pos_cnt << std::endl;
         } else {
+            std::cout << "ranksum = " << ranksum<< "\t" ;
+            std::cout << "pos_cnt = " << pos_cnt<< "\t" ;
+            std::cout << "neg_cnt = " << neg_cnt<< "\t" ;
             area = (ranksum*1.0 - 1.0*pos_cnt*(pos_cnt+1)/2) / (1.0*pos_cnt*neg_cnt);
             std::cout << "auc = " << area
                 << "\ttp = " << pos_cnt

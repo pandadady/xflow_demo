@@ -114,6 +114,7 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
     while (true) {
         test_data_loader.load_minibatch_hash_data_fread();
         if (test_data->fea_matrix.size() <= 0) break;
+        std::cout <<"Worker No. is = " << ps::MyRank() <<" " <<test_data->fea_matrix.size() << " "<< test_data_loader.btop<<" "<< test_data_loader.bmax <<std::endl;
         int thread_size = test_data->fea_matrix.size() / core_num;
         int start = 0;
         int end = 0;
@@ -129,7 +130,6 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
             end = test_data->fea_matrix.size();
             pool->enqueue(std::bind(&FMWorker::calculate_pctr, this, start, end));
         }
-        std::cout <<start<<" " << end << std::endl;
         while (calculate_pctr_thread_finish_num > 0) usleep(5);
 
     }
@@ -314,6 +314,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
         while (1) {
             train_data_loader.load_minibatch_hash_data_fread();
             if (train_data->fea_matrix.size() <= 0) break;
+            std::cout <<"Worker No. is = " << ps::MyRank() <<" " <<train_data->fea_matrix.size() << " "<< train_data_loader.btop<<" "<< train_data_loader.bmax <<std::endl;
             int thread_size = train_data->fea_matrix.size() / core_num;
             gradient_thread_finish_num = core_num + 1;
             int start = 0;
@@ -327,7 +328,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
             if (train_data->fea_matrix.size() > end){
                 start = end;
                 end = train_data->fea_matrix.size();
-                std::cout <<"Worker No. is = " << ps::MyRank() <<" start " << start <<" end " << end << std::endl;
+                //std::cout <<"Worker No. is = " << ps::MyRank() <<" start " << start <<" end " << end << std::endl;
                 pool->enqueue(std::bind(&FMWorker::update, this, start, end));
 
             }
