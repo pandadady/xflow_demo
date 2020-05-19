@@ -11,6 +11,7 @@ then
     cp mapfeat.py ../run/mapfeat.py
     cp run* ../run
     cp kill.sh ../run
+    cp -r data ../run
 else
   if [ $1 == 'make' ]
   then
