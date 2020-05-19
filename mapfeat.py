@@ -114,7 +114,7 @@ def trans(filename, targetname):
         if num==10000:break
     fo.close()
 
-def main(workernum):
+def main(workernum, test):
     fpath = '../ctr_data/split_data/'
     flist_train_selects = []
     flist_test_selects = []
@@ -130,7 +130,7 @@ def main(workernum):
                 if used  == "un" and len(flist_train_selects)!= workernum:
                     flist_train_selects.append(filen);
                     used = "train"
-                elif used  == "un" and len(flist_test_selects)!=1:
+                elif used  == "un" and len(flist_test_selects)!=1 and test==1:
                     flist_test_selects.append(filen);
                     used = "test"
                 record[filen] = used
@@ -141,7 +141,7 @@ def main(workernum):
             if len(flist_train_selects) != workernum:
                 flist_train_selects.append(filen);
                 used = "train"
-            elif len(flist_test_selects) != 1:
+            elif len(flist_test_selects) != 1  and test==1:
                 flist_test_selects.append(filen);
                 used = "test"
             record[filen] = used
@@ -151,17 +151,21 @@ def main(workernum):
     f.close()
     print(flist_train_selects)
     print(flist_test_selects)
-    if len(flist_train_selects) < workernum or len(flist_test_selects) !=1:
+    if len(flist_train_selects) < workernum :
+        print("data not enough!!!!!")
+        return
+    if len(flist_test_selects) !=1  and test==1:
         print("data not enough!!!!!")
         return
     for i in range(len(flist_train_selects)):
         filepath = fpath + flist_train_selects[i]
         target = 'data/train.libsvm-0000'+str(i)
         trans(filepath, target)
-
-    filepath = fpath + flist_test_selects[0]
-    target = 'data/test.libsvm-0000' + str(0)
-    trans(filepath, target)
+    if test==1:
+        filepath = fpath + flist_test_selects[0]
+        target = 'data/test.libsvm-0000' + str(0)
+        trans(filepath, target)
 if __name__ == '__main__':
     workernum = int(sys.argv[1:][0])
-    main(workernum)
+    test = int(sys.argv[1:][1])
+    main(workernum, test)
