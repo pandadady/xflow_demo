@@ -98,9 +98,9 @@ def trans(filename, targetname):
                 label = arr[i]
                 continue
             if i==0:
-                slotid=1
+                continue
             if i>=2:
-                slotid=i
+                slotid=i-1
             fid = str(GetFidHashUint64(slotid, arr[i]))
 
             #fid = arr[i]
