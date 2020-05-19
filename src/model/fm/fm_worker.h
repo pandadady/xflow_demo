@@ -65,8 +65,8 @@ class FMWorker {
     void update(int start, int end);
     void batch_training(ThreadPool* pool);
     void train();
-    void save_w_v( std::vector<ps::Key>& unique_keys, std::vector<float>& w, std::vector<float>& v);
-    void dump_w_v();
+//    void save_w_v( std::vector<ps::Key>& unique_keys, std::vector<float>& w, std::vector<float>& v);
+//    void dump_w_v();
  public:
     int epochs = 60;
     std::string modelname;
@@ -83,8 +83,6 @@ class FMWorker {
     std::vector<Base::auc_key> test_auc_vec;
 
     std::ofstream md;
-    std::ofstream mld;//模型文件
-
     std::mutex mutex;
     Base* base_;
     ThreadPool* pool_;
@@ -94,7 +92,7 @@ class FMWorker {
     const char *test_file_path;
     char train_data_path[1024];
     char test_data_path[1024];
-    int v_dim_ = 10;
+    int v_dim_ = 20;
     ps::KVWorker<float>* kv_w;
     ps::KVWorker<float>* kv_v;
     std::unordered_map<ps::Key, float> store_w;

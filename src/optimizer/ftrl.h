@@ -13,7 +13,7 @@
 
 namespace xflow {
 int w_dim = 1;
-int v_dim = 10;
+int v_dim = 20;
 float alpha = 5e-2;
 float beta = 1.0;
 float lambda1 = 5e-5;
@@ -102,16 +102,18 @@ class FTRL {
                 }
                 std::cout <<"load w success " << store.size()<<std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+                server->Response(req_meta, res);
+                return;
             }
 
             //std::cout << "KVServerFTRLHandle_w " << server->store_w.size()  <<std::endl;
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
-                if (store.find(key) == store.end()){
-                    FTRLEntry_w val(1);
-                    val.w[0] = Base::local_normal_real_distribution<double>(0.0, 1.0)(Base::local_random_engine()) * 1e-2;
-                    store[key] = val;
-                }
+//                if (store.find(key) == store.end()){
+//                    FTRLEntry_w val(1);
+//                    val.w[0] = Base::local_normal_real_distribution<double>(0.0, 1.0)(Base::local_random_engine()) * 1e-2;
+//                    store[key] = val;
+//                }
 
                 FTRLEntry_w& val = store[key];
                 for (int j = 0; j < w_dim; ++j) {
@@ -119,7 +121,8 @@ class FTRL {
                         float g = req_data.vals[i * w_dim + j];
                         float old_n = val.n[j];
                         float n = old_n + g * g;
-                        val.z[j] += g - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
+                        val.z[j] += g
+                                                - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
                         val.n[j] = n;
                         if (std::abs(val.z[j]) <= lambda1) {
                             val.w[j] = 0.0;
@@ -127,7 +130,8 @@ class FTRL {
                             float tmpr = 0.0;
                             if (val.z[j] > 0.0) tmpr = val.z[j] - lambda1;
                             if (val.z[j] < 0.0) tmpr = val.z[j] + lambda1;
-                            float tmpl = -1 * ((beta + std::sqrt(val.n[j]))/alpha    + lambda2);
+                            float tmpl = -1
+                                                     * ((beta + std::sqrt(val.n[j]))/alpha    + lambda2);
                             val.w[j] = tmpr / tmpl;
                         }
                     } else {
@@ -222,6 +226,8 @@ class FTRL {
                 }
                 std::cout <<"load v success " << store.size()<< std::endl;
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+                server->Response(req_meta, res);
+                return;
             }
 
 
@@ -242,7 +248,8 @@ class FTRL {
                         float g = req_data.vals[i * v_dim + j];
                         float old_n = val.n[j];
                         float n = old_n + g * g;
-                        val.z[j] += g - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
+                        val.z[j] += g -
+                                                (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
                         val.n[j] = n;
 
                         if (std::abs(val.z[j]) <= lambda1) {

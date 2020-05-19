@@ -123,7 +123,7 @@ void LoadData::load_minibatch_hash_data_fread() {
     } else {
         buf[bmax] = '\0';
     }
-
+    float yp=0.0;
     char *p = &buf[0];
     while (*p != '\0') {
         char *q = p;
@@ -133,6 +133,7 @@ void LoadData::load_minibatch_hash_data_fread() {
         if (y_tmp > 0.0000001) y = 1;
         else
             y = 0;
+        yp = y;
         m_data.label.push_back(y);
         ++q;
         p = q;
@@ -151,7 +152,7 @@ void LoadData::load_minibatch_hash_data_fread() {
                     if (field_index == 0) keyval.fgid = std::atof(pp);
                     if (field_index == 1) {
                         keyval.fid = h(std::string(pp));
-                        keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
+//                        keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
                         break;
                     }
                     ++qq;
@@ -175,7 +176,7 @@ void LoadData::load_minibatch_hash_data_fread() {
                     if (field_index == 0) keyval.fgid = std::atof(pp);
                     if (field_index == 1) {
                         keyval.fid = h(std::string(pp));
-                        keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
+//                        keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
                         break;
                     }
                     ++qq;
@@ -198,7 +199,7 @@ void LoadData::load_minibatch_hash_data_fread() {
                 if (field_index == 0) keyval.fgid = std::atof(pp);
                 if (field_index == 1) {
                     keyval.fid = h(std::string(pp));
-                    keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
+//                    keyval.fid = strtoull(std::string(pp).c_str(), NULL, 0);
                     break;
                 }
                 ++qq;
@@ -214,7 +215,11 @@ void LoadData::load_minibatch_hash_data_fread() {
         }
         // return;
         if (m_data.fea_matrix.size() %1000 == 0){
-            std::cout << "fid = " << keyval.fid << std::endl;
+            std::cout << yp <<"\t";
+            for(auto& keyvalp: sample){
+                std::cout << keyvalp.fgid<< ":" << keyvalp.fid<<" ";
+            }
+            std::cout <<std::endl;
         }
         m_data.fea_matrix.push_back(sample);
     }

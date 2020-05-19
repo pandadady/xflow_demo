@@ -105,7 +105,7 @@ void FMWorker::predict(ThreadPool* pool, int rank, int block) {
 
 
     snprintf(test_data_path, 1024, "%s-%05d", test_file_path, rank);
-    int load_size = block_size << 20;
+    size_t load_size = block_size << 20;
     xflow::LoadData test_data_loader(test_data_path, load_size);
     test_data = &(test_data_loader.m_data);
     //std::cout <<"predict load_size " << load_size << std::endl;
@@ -220,32 +220,32 @@ void FMWorker::calculate_loss(std::vector<float>& w,
     }
 }
 
-void FMWorker::dump_w_v(){
-    mld.open("model/model." + modelname+"."+std::to_string(ps::MyRank()));
-    if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
-    for(auto&item : store_w){
-        mld << item.first << "\t" <<item.second << "\t";
-        for (auto& val:store_v[item.first]){
-            mld << val <<",";
-        }
-        mld << std::endl;
-    }
-    mld.close();
-}
-
-void FMWorker::save_w_v( std::vector<ps::Key>& unique_keys, std::vector<float>& w, std::vector<float>& v){
-    //std::cout<<"fid "<< unique_keys.size() <<" w "<< w.size() <<" v "<< v.size() << std::endl ;
-    for (size_t i = 0; i < unique_keys.size(); i++) {
-        size_t fid = (unique_keys)[i];
-        store_w[fid] = w[i];
-        std::vector<float> v_weight(10);
-        for(size_t j = 0 ; j < v_dim_; j++){
-            v_weight[j] = v[i * v_dim_ + j];
-         }
-         store_v[fid] = v_weight;
-    }
-    //std::cout<<"store w "<< store_w.size() <<" v "<< store_v.size() << std::endl;
-}
+//void FMWorker::dump_w_v(){
+//    mld.open("model/model." + modelname+"."+std::to_string(ps::MyRank()));
+//    if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
+//    for(auto&item : store_w){
+//        mld << item.first << "\t" <<item.second << "\t";
+//        for (auto& val:store_v[item.first]){
+//            mld << val <<",";
+//        }
+//        mld << std::endl;
+//    }
+//    mld.close();
+//}
+//
+//void FMWorker::save_w_v( std::vector<ps::Key>& unique_keys, std::vector<float>& w, std::vector<float>& v){
+//    //std::cout<<"fid "<< unique_keys.size() <<" w "<< w.size() <<" v "<< v.size() << std::endl ;
+//    for (size_t i = 0; i < unique_keys.size(); i++) {
+//        size_t fid = (unique_keys)[i];
+//        store_w[fid] = w[i];
+//        std::vector<float> v_weight(v_dim_);
+//        for(size_t j = 0 ; j < v_dim_; j++){
+//            v_weight[j] = v[i * v_dim_ + j];
+//         }
+//         store_v[fid] = v_weight;
+//    }
+//    //std::cout<<"store w "<< store_w.size() <<" v "<< store_v.size() << std::endl;
+//}
 
 
 void FMWorker::update(int start, int end) {
@@ -284,13 +284,13 @@ void FMWorker::update(int start, int end) {
 
     kv_w->Wait(kv_w->Push(unique_keys, push_w_gradient));
     kv_v->Wait(kv_v->Push(unique_keys, push_v_gradient));
-    mutex.lock();
-    w.clear();
-    v.clear();
-    kv_w->Wait(kv_w->Pull(unique_keys, &w));
-    kv_v->Wait(kv_v->Pull(unique_keys, &v));
-    save_w_v(unique_keys, w, v);
-    mutex.unlock();
+//    mutex.lock();
+//    w.clear();
+//    v.clear();
+//    kv_w->Wait(kv_w->Pull(unique_keys, &w));
+//    kv_v->Wait(kv_v->Pull(unique_keys, &v));
+//    save_w_v(unique_keys, w, v);
+//    mutex.unlock();
     --gradient_thread_finish_num;
 }
 
@@ -301,14 +301,14 @@ void FMWorker::batch_training(ThreadPool* pool) {
 
     key.push_back(0);
     val_w.push_back(0);
-    val_v.assign(10, 0);
+    val_v.assign(v_dim_, 0);
 
     std::cout<<"Push success 110 " << ps::MyRank()<<std::endl;
     kv_w->Wait(kv_w->Pull(key, &val_w, nullptr, 110, nullptr));
     kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 110, nullptr));
 
     for (int epoch = 0; epoch < epochs; ++epoch) {
-        int load_size = block_size << 20;
+        size_t load_size = block_size << 20;
         xflow::LoadData train_data_loader(train_data_path, load_size);
         train_data = &(train_data_loader.m_data);
         std::cout <<"Worker No. is = " << ps::MyRank()<< " train_epoch "<< epoch << std::endl;
@@ -349,7 +349,7 @@ void FMWorker::batch_training(ThreadPool* pool) {
     val_v.clear();
     key.push_back(0);
     val_w.push_back(0);
-    val_v.assign(10, 0);
+    val_v.assign(v_dim_, 0);
     kv_w->Wait(kv_w->Pull(key, &val_w, nullptr, 119, nullptr));
     kv_v->Wait(kv_v->Pull(key, &val_v, nullptr, 119, nullptr));
     std::cout<<"Push success 119 " << ps::MyRank()<<std::endl;
