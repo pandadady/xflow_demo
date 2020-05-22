@@ -62,58 +62,60 @@ class FTRL {
             if (req_meta.cmd == 119){
                 dump_start_count++;
                 std::cout <<"dump w cmd "<< req_meta.cmd << " workernum " << workernum << " " << dump_start_count <<std::endl;
+                if (workernum == dump_start_count){
+                    std::ofstream mld;
+                    mld.open("model/model.all.w" );
+                    if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
+                    for(auto&item : store){
+                        mld << item.first << "\t" <<item.second.w[0] ;
+                        mld << std::endl;
+                    }
+                    mld.close();
+                    std::cout <<"dump w success " << store.size()<<std::endl;
+                }
+                server->Response(req_meta, res);
+                return;
             }
             if (req_meta.cmd == 110){
                 load_start_count++;
                 std::cout <<"load w cmd "<< req_meta.cmd << " workernum " << workernum << " " << load_start_count <<std::endl;
-            }
-            if (req_meta.cmd == 119 && workernum == dump_start_count){
-                std::ofstream mld;
-                mld.open("model/model.all.w" );
-                if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
-                for(auto&item : store){
-                    mld << item.first << "\t" <<item.second.w[0] ;
-                    mld << std::endl;
-                }
-                mld.close();
-                std::cout <<"dump w success " << store.size()<<std::endl;
-                server->Response(req_meta, res);
-                return;
-            }
-            if (req_meta.cmd == 110 && file_exists("model/model.all.w" )&& workernum == load_start_count){
-                //load/////////////////////////////////////////////////////////////////////////////////////////////////
-                std::ifstream fin("model/model.all.w" );
-                std::string line;
-                while (getline(fin, line)) {
-                    std::vector<std::string> items1;
-                    boost::split(items1, line, boost::is_any_of("\t"));
-                    //std::cout<<line<<std::endl;
-                    if (items1.size() != 2) {
-                        std::cout<<"error" <<items1.size()<<std::endl;
-                        continue;
+                if (file_exists("model/model.all.w" )&& workernum == load_start_count){
+                    //load/////////////////////////////////////////////////////////////////////////////////////////////////
+                    std::ifstream fin("model/model.all.w" );
+                    std::string line;
+                    while (getline(fin, line)) {
+                        std::vector<std::string> items1;
+                        boost::split(items1, line, boost::is_any_of("\t"));
+                        //std::cout<<line<<std::endl;
+                        if (items1.size() != 2) {
+                            std::cout<<"error" <<items1.size()<<std::endl;
+                            continue;
+                        }
+                        //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
+                        FTRLEntry_w val;
+                        val.w[0] = atof(items1[1].c_str());
+                        //strtoull (love.c_str(), NULL, 0);
+                        store.insert( std::make_pair(strtoull(items1[0].c_str(), NULL, 0), val ));
+                        //std::cout <<"fid w "<<strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
+                        //std::cout <<"store w "<< store.size()<<std::endl;
                     }
-                    //std::cout<<line<<" items2 " <<items2.size()<<std::endl;
-                    FTRLEntry_w val;
-                    val.w[0] = atof(items1[1].c_str());
-                    //strtoull (love.c_str(), NULL, 0);
-                    store.insert( std::make_pair(strtoull(items1[0].c_str(), NULL, 0), val ));
-                    //std::cout <<"fid w "<<strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
-                    //std::cout <<"store w "<< store.size()<<std::endl;
+                    std::cout <<"load w success " << store.size()<<std::endl;
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
-                std::cout <<"load w success " << store.size()<<std::endl;
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////
                 server->Response(req_meta, res);
                 return;
             }
 
+
+
             //std::cout << "KVServerFTRLHandle_w " << server->store_w.size()  <<std::endl;
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
-//                if (store.find(key) == store.end()){
-//                    FTRLEntry_w val(1);
-//                    val.w[0] = Base::local_normal_real_distribution<double>(0.0, 1.0)(Base::local_random_engine()) * 1e-2;
-//                    store[key] = val;
-//                }
+                if (store.find(key) == store.end()){
+                    FTRLEntry_w val(1);
+                    val.w[0] = Base::local_normal_real_distribution<double>(0.0, 1.0)(Base::local_random_engine()) * 1e-2;
+                    store[key] = val;
+                }
 
                 FTRLEntry_w& val = store[key];
                 for (int j = 0; j < w_dim; ++j) {
@@ -121,8 +123,7 @@ class FTRL {
                         float g = req_data.vals[i * w_dim + j];
                         float old_n = val.n[j];
                         float n = old_n + g * g;
-                        val.z[j] += g
-                                                - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
+                        val.z[j] += g - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
                         val.n[j] = n;
                         if (std::abs(val.z[j]) <= lambda1) {
                             val.w[j] = 0.0;
@@ -130,8 +131,7 @@ class FTRL {
                             float tmpr = 0.0;
                             if (val.z[j] > 0.0) tmpr = val.z[j] - lambda1;
                             if (val.z[j] < 0.0) tmpr = val.z[j] + lambda1;
-                            float tmpl = -1
-                                                     * ((beta + std::sqrt(val.n[j]))/alpha    + lambda2);
+                            float tmpl = -1 * ((beta + std::sqrt(val.n[j]))/alpha    + lambda2);
                             val.w[j] = tmpr / tmpl;
                         }
                     } else {
@@ -177,55 +177,55 @@ class FTRL {
                 res.vals.resize(keys_size * v_dim);
             }
 
-            if (req_meta.cmd == 119 ){
+            if (req_meta.cmd == 119){
                 dump_start_count++;
                 std::cout <<"dump v cmd "<< req_meta.cmd << " workernum " << workernum << " " << dump_start_count <<std::endl;
+                if (workernum == dump_start_count){
+                    std::ofstream mld;
+                    mld.open("model/model.all.v" );
+                    if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
+                    for(auto&item : store){
+                        mld << item.first << "\t";
+                        for(auto& val : item.second.w){
+                            mld <<val<<",";
+                        }
+                        mld << std::endl;
+                    }
+                    mld.close();
+                    std::cout <<"dump v success " << store.size()<<std::endl;
+                }
+                server->Response(req_meta, res);
+                return;
             }
             if (req_meta.cmd == 110){
                 load_start_count++;
                 std::cout <<"load v cmd "<< req_meta.cmd << " workernum " << workernum << " " << load_start_count <<std::endl;
-            }
-            if (req_meta.cmd == 119 && workernum == dump_start_count){
-                std::ofstream mld;
-                mld.open("model/model.all.v" );
-                if (!mld.is_open()) std::cout << "open model file failure!" << std::endl;
-                for(auto&item : store){
-                    mld << item.first << "\t";
-                    for(auto& val : item.second.w){
-                        mld <<val<<",";
+                if (file_exists("model/model.all.v") && workernum == load_start_count){
+                    //load/////////////////////////////////////////////////////////////////////////////////////////////////
+                    std::ifstream fin("model/model.all.v");
+                    std::string line;
+                    while (getline(fin, line)) {
+                        std::vector<std::string> items1;
+                        boost::split(items1, line, boost::is_any_of("\t"));
+                        //std::cout<<line<<std::endl;
+                        if (items1.size() != 2) {
+                            std::cout<<"error" <<items1.size()<<std::endl;
+                            continue;
+                        }
+                        std::vector<std::string> items2;
+                        boost::split(items2, items1[1], boost::is_any_of(","));
+                        FTRLEntry_v val;
+                        for (int j=0; j < v_dim; j++){
+                             val.w[j] = atof(items2[j].c_str());
+                        }
+                        store.insert( std::make_pair( strtoull(items1[0].c_str(), NULL, 0), val ));
+                        //std::cout <<"fid v "<< strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
+                        //std::cout <<"store v "<< store.size()<<std::endl;
                     }
-                    mld << std::endl;
+                    std::cout <<"load v success " << store.size()<< std::endl;
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
-                mld.close();
-                std::cout <<"dump v success " << store.size()<<std::endl;
-                server->Response(req_meta, res);
-                return;
-            }
-            if (req_meta.cmd == 110 && file_exists("model/model.all.v") && workernum == load_start_count){
 
-                //load/////////////////////////////////////////////////////////////////////////////////////////////////
-                std::ifstream fin("model/model.all.v");
-                std::string line;
-                while (getline(fin, line)) {
-                    std::vector<std::string> items1;
-                    boost::split(items1, line, boost::is_any_of("\t"));
-                    //std::cout<<line<<std::endl;
-                    if (items1.size() != 2) {
-                        std::cout<<"error" <<items1.size()<<std::endl;
-                        continue;
-                    }
-                    std::vector<std::string> items2;
-                    boost::split(items2, items1[1], boost::is_any_of(","));
-                    FTRLEntry_v val;
-                    for (int j=0; j < v_dim; j++){
-                         val.w[j] = atof(items2[j].c_str());
-                    }
-                    store.insert( std::make_pair( strtoull(items1[0].c_str(), NULL, 0), val ));
-                    //std::cout <<"fid v "<< strtoull(items1[0].c_str(), NULL, 0)<<std::endl;
-                    //std::cout <<"store v "<< store.size()<<std::endl;
-                }
-                std::cout <<"load v success " << store.size()<< std::endl;
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////
                 server->Response(req_meta, res);
                 return;
             }
@@ -248,8 +248,7 @@ class FTRL {
                         float g = req_data.vals[i * v_dim + j];
                         float old_n = val.n[j];
                         float n = old_n + g * g;
-                        val.z[j] += g -
-                                                (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
+                        val.z[j] += g - (std::sqrt(n) - std::sqrt(old_n)) / alpha * val.w[j];
                         val.n[j] = n;
 
                         if (std::abs(val.z[j]) <= lambda1) {
