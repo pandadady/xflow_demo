@@ -1,33 +1,35 @@
 /*
- * mosgd.h
+ * adadelta.h
  * Copyright (C) 2020 shiduo <dolphshi@gmail.com>
  *
  */
 
-#ifndef SRC_OPTIMIZER_MOSGD_H_
-#define SRC_OPTIMIZER_MOSGD_H_
+#ifndef SRC_OPTIMIZER_ADADELTA_H_
+#define SRC_OPTIMIZER_ADADELTA_H_
 
 #include <vector>
 
 namespace xflow {
 extern int w_dim;
 extern int v_dim;
-float learning_rate = 0.001;
-float momentum = 0.1;    //冲量
+float rho = 0.9;
+float epsilon = 1e-7;;
 
-class MOSGD {
+class ADAD {
  public:
-    MOSGD() {}
-    ~MOSGD() {}
+    ADAD() {}
+    ~ADAD() {}
 
-    typedef struct MOSGDEntry_w {
-        MOSGDEntry_w(int k = w_dim) {
+    typedef struct ADADEntry_w {
+        ADADEntry_w(int k = w_dim) {
             w.resize(k, 0.0);
-            gw.resize(k, 0.0);
+            sw.resize(k, 0.0);
+            sdw.resize(k, 0.0);
         }
         std::vector<float> w;
-        std::vector<float> gw;
-    } mosgdentry_w;
+        std::vector<float> sw;
+        std::vector<float> sdw;
+    } adadentry_w;
 
     struct KVServerSGDHandle_w {
         void operator()(const ps::KVMeta& req_meta,
@@ -47,12 +49,14 @@ class MOSGD {
 
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
-                MOSGDEntry_w& val = store[key];
+                ADADEntry_w& val = store[key];
                 for (int j = 0; j < w_dim; ++j) {
                     if (req_meta.push) {
                         float g = req_data.vals[i * w_dim + j];
-                        val.gw[j] = momentum * val.gw[j] + learning_rate *g;
-                        val.w[j] -= val.gw;
+                        val.sw[j] =  rho*val.sw[j] + (1-rho)*g *g;
+                        float gg = sqrt((val.sdw[j]+epsilon)/(val.sw[j]+epsilon)) * g;
+                        val.sdw[j]  = rho*val.sdw[j] + (1-rho)*gg *gg;
+                        val.w[j] -= gg;
                     } else {
                         for (int j = 0; j < w_dim; ++j) {
                             res.vals[i * w_dim + j] = val.w[j];
@@ -64,17 +68,19 @@ class MOSGD {
         }
 
      private:
-        std::unordered_map<ps::Key, mosgdentry_w> store;
+        std::unordered_map<ps::Key, adadentry_w> store;
     };
 
-    typedef struct MOSGDEntry_v {
-        MOSGDEntry_v(int k = v_dim) {
+    typedef struct ADADEntry_v {
+        ADADEntry_v(int k = v_dim) {
             w.resize(k, 0.001);
-            gw.resize(k, 0.000);
+            sw.resize(k, 0.000);
+            sdw.resize(k, 0.000);
         }
         std::vector<float> w;
-        std::vector<float> gw;
-    } mosgdentry_v;
+        std::vector<float> sw;
+        std::vector<float> sdw;
+    } adadentry_v;
 
     struct KVServerSGDHandle_v {
         void operator()(const ps::KVMeta& req_meta,
@@ -94,12 +100,14 @@ class MOSGD {
 
             for (size_t i = 0; i < keys_size; ++i) {
                 ps::Key key = req_data.keys[i];
-                MOSGDEntry_v& val = store[key];
+                ADADEntry_v& val = store[key];
                 for (int j = 0; j < v_dim; ++j) {
                     if (req_meta.push) {
-                        float g = req_data.vals[i * v_dim + j];
-                        val.gw[j] = momentum * val.gw[j] + learning_rate *g;
-                        val.w[j] -= learning_rate * val.gw;
+                        float g = req_data.vals[i * w_dim + j];
+                        val.sw[j] =  rho*val.sw[j] + (1-rho)*g *g;
+                        float gg = sqrt((val.sdw[j]+epsilon)/(val.sw[j]+epsilon)) * g;
+                        val.sdw[j]  = rho*val.sdw[j] + (1-rho)*gg *gg;
+                        val.w[j] -= gg;
                     } else {
                         for (int j = 0; j < v_dim; ++j) {
                             res.vals[i * v_dim + j] = val.w[j];
@@ -111,11 +119,11 @@ class MOSGD {
         }
 
      private:
-        std::unordered_map<ps::Key, mosgdentry_v> store;
+        std::unordered_map<ps::Key, adadentry_v> store;
     };
 
  private:
 };
 }    // namespace xflow
 
-#endif    // SRC_OPTIMIZER_MOSGD_H_
+#endif    // SRC_OPTIMIZER_ADADELTA_H_
