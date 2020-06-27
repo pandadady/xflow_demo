@@ -217,7 +217,7 @@ void FMWorker::calculate_loss(std::vector<float>& w,
     for (int i = 0; i < wx.size(); i++) {
         float pctr = base_->sigmoid(wx[i] + v_y[i]);
         float y = train_data->label[start];
-        loss[i] =  - (y * log(pctr) + (1-y)*(1- log(pctr)));
+        loss[i] =  pctr - y;
         start++;
     }
 }
