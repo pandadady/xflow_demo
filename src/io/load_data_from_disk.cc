@@ -214,13 +214,13 @@ void LoadData::load_minibatch_hash_data_fread() {
             // std::cout << "fgid = " << keyval.fgid << std::endl;
         }
         // return;
-        if (m_data.fea_matrix.size() %1000 == 0){
-            std::cout << yp <<"\t";
-            for(auto& keyvalp: sample){
-                std::cout << keyvalp.fgid<< ":" << keyvalp.fid<<" ";
-            }
-            std::cout <<std::endl;
-        }
+//        if (m_data.fea_matrix.size() %1000 == 0){
+//            std::cout << yp <<"\t";
+//            for(auto& keyvalp: sample){
+//                std::cout << keyvalp.fgid<< ":" << keyvalp.fid<<" ";
+//            }
+//            std::cout <<std::endl;
+//        }
         m_data.fea_matrix.push_back(sample);
     }
 }

@@ -159,11 +159,11 @@ def main(workernum, test):
         return
     for i in range(len(flist_train_selects)):
         filepath = fpath + flist_train_selects[i]
-        target = 'data/train.libsvm-0000'+str(i)
+        target = 'data/small_train-0000'+str(i)
         trans(filepath, target)
     if test==1:
         filepath = fpath + flist_test_selects[0]
-        target = 'data/test.libsvm-0000' + str(0)
+        target = 'data/small_test-0000' + str(0)
         trans(filepath, target)
 if __name__ == '__main__':
     workernum = int(sys.argv[1:][0])

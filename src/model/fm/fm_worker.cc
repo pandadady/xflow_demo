@@ -8,7 +8,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <immintrin.h>
-
+#include <math.h>
 #include <algorithm>
 #include <ctime>
 #include <iostream>
@@ -80,7 +80,7 @@ void FMWorker::calculate_pctr(int start, int end) {
     }
     auto v_y = std::vector<float>(end - start);
     for (size_t i = 0; i < end - start; ++i) {
-        v_y[i] = v_sum[i] * v_sum[i] - v_pow_sum[i];
+        v_y[i] = 0.5*(v_sum[i] * v_sum[i] - v_pow_sum[i]);
     }
 
     for (int i = 0; i < wx.size(); ++i) {
@@ -211,12 +211,14 @@ void FMWorker::calculate_loss(std::vector<float>& w,
     }
     auto v_y = std::vector<float>(end - start);
     for (size_t i = 0; i < end - start; ++i) {
-        v_y[i] = v_sum[i] * v_sum[i] - v_pow_sum[i];
+        v_y[i] =0.5* (v_sum[i] * v_sum[i] - v_pow_sum[i]);
     }
 
     for (int i = 0; i < wx.size(); i++) {
         float pctr = base_->sigmoid(wx[i] + v_y[i]);
-        loss[i] = pctr - train_data->label[start++];
+        float y = train_data->label[start];
+        loss[i] =  - (y * log(pctr) + (1-y)*(1- log(pctr)));
+        start++;
     }
 }
 
