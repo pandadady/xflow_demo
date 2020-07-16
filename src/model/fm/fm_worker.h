@@ -48,20 +48,21 @@ class FMWorker {
     void predict(ThreadPool* pool, int rank, int block);
 
     void calculate_gradient(std::vector<Base::sample_key>& all_keys,
-                                                    std::vector<ps::Key>& unique_keys,
-                                                    size_t start, size_t end,
-                                                    std::vector<float>& v,
-                                                    std::vector<float>& v_sum,
-                                                    std::vector<float>& loss,
-                                                    std::vector<float>& push_w_gradient,
-                                                    std::vector<float>& push_v_gradient);
+        std::vector<ps::Key>& unique_keys,
+        size_t start, size_t end,
+        std::vector<float>& v,
+        std::vector<float>& v_sum_sid,
+        std::vector<float>& loss,
+        std::vector<float>& push_w_gradient,
+        std::vector<float>& push_v_gradient);
     void calculate_loss(std::vector<float>& w,
-                                            std::vector<float>& v,
-                                            std::vector<Base::sample_key>& all_keys,
-                                            std::vector<ps::Key>& unique_keys,
-                                            size_t start, size_t end,
-                                            std::vector<float>& v_sum,
-                                            std::vector<float>& loss);
+        std::vector<float>& v,
+        std::vector<Base::sample_key>& all_keys,
+        std::vector<ps::Key>& unique_keys,
+        size_t start, size_t end,
+        std::unordered_map<size_t, std::vector<float>>&  v_sum,
+        std::vector<float>& v_sum_sid,
+        std::vector<float>& loss);
     void update(int start, int end);
     void batch_training(ThreadPool* pool);
     void train();
